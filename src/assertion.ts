@@ -65,6 +65,11 @@ async function fetchMatchCount(
   let index = 0;
 
   for (const [column, value] of Object.entries(conditions)) {
+    if (value === null) {
+      clauses.push(`${quoteIdentifier(column)} IS NULL`);
+      continue;
+    }
+
     const paramName = `p${index++}`;
     clauses.push(`${quoteIdentifier(column)} = @${paramName}`);
     params[paramName] = value;
