@@ -1,6 +1,6 @@
 {
   "name": "spanner-assert",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Library for validating Cloud Spanner records against YAML expectations",
   "keywords": [
     "spanner",
