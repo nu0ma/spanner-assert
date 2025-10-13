@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version type'
+        description: "Version type"
         required: true
         type: choice
         options:
@@ -34,6 +34,9 @@ jobs:
         with:
           node-version: 24
           cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
       - name: Configure Git
         run: |
@@ -74,9 +77,9 @@ jobs:
         with:
           branch: release/v${{ env.VERSION }}
           delete-branch: true
-          title: 'Release v${{ env.VERSION }}'
+          title: "Release v${{ env.VERSION }}"
           body-path: release-notes.md
-          commit-message: 'chore: release v${{ env.VERSION }}'
+          commit-message: "chore: release v${{ env.VERSION }}"
           labels: |
             Release
           assignees: ${{ github.actor }}
