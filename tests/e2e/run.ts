@@ -162,16 +162,52 @@ async function setupEmulator(): Promise<void> {
 async function seedSamples(
   database: import('@google-cloud/spanner').Database,
 ): Promise<void> {
+  const createdAt = '2024-01-01T00:00:00Z';
+
   await database.runTransactionAsync(async (transaction) => {
     await transaction.batchUpdate([
       {
-        sql: 'DELETE FROM Samples WHERE TRUE',
+        sql: 'DELETE FROM Users WHERE TRUE',
       },
       {
-        sql: 'INSERT INTO Samples (Id, Name) VALUES (@id, @name)',
+        sql: 'DELETE FROM Products WHERE TRUE',
+      },
+      {
+        sql: 'DELETE FROM Books WHERE TRUE',
+      },
+      {
+        sql: `INSERT INTO Users (UserID, Name, Email, Status, CreatedAt)
+               VALUES (@userId, @name, @email, @status, @createdAt)`,
         params: {
-          id: '1',
-          name: 'Default Name',
+          userId: 'user-001',
+          name: 'Alice Example',
+          email: 'alice@example.com',
+          status: 1,
+          createdAt,
+        },
+      },
+      {
+        sql: `INSERT INTO Products (ProductID, Name, Price, IsActive, CategoryID, CreatedAt)
+               VALUES (@productId, @name, @price, @isActive, @categoryId, @createdAt)`,
+        params: {
+          productId: 'product-001',
+          name: 'Example Product',
+          price: 1999,
+          isActive: true,
+          categoryId: null,
+          createdAt,
+        },
+      },
+      {
+        sql: `INSERT INTO Books (BookID, Title, Author, PublishedYear, JSONData)
+               VALUES (@bookId, @title, @author, @publishedYear,
+                       @jsonData)`,
+        params: {
+          bookId: 'book-001',
+          title: 'Example Book',
+          author: 'Jane Doe',
+          publishedYear: 2024,
+          jsonData: '{"genre":"fiction","pages":320}',
         },
       },
     ]);

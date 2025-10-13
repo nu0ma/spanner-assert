@@ -4,17 +4,17 @@ import { loadExpectationsFromFile } from './expectation-loader.js';
 import { openDatabase, type DatabaseHandle, type SpannerClientDependencies } from './spanner-client.js';
 import type { ExpectationsFile, SpannerConnectionConfig } from './types.js';
 
-export type SpannerAssertOptions = {
+type SpannerAssertOptions = {
   connection?: Partial<SpannerConnectionConfig>;
   clientDependencies?: SpannerClientDependencies;
 };
 
-export type AssertOptions = {
+type AssertOptions = {
   connection?: Partial<SpannerConnectionConfig>;
   baseDir?: string;
 };
 
-export type SpannerAssertInstance = {
+type SpannerAssertInstance = {
   assert(expectedFile: string, options?: AssertOptions): Promise<void>;
   assertExpectations(
     expectations: ExpectationsFile,
@@ -95,4 +95,3 @@ export function createSpannerAssert(
 export const spannerAssert = createSpannerAssert();
 
 export { SpannerAssertionError } from './errors.js';
-export type { ExpectationsFile, SpannerConnectionConfig } from './types.js';
