@@ -25,7 +25,7 @@
     "yaml",
     "gcp"
   ],
-  "author": "",
+  "author": "nu0ma",
   "license": "MIT",
   "files": [
     "dist"

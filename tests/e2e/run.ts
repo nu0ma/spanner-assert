@@ -7,7 +7,7 @@ import { setTimeout as delay } from "node:timers/promises";
 
 import { Spanner } from "@google-cloud/spanner";
 
-import { createSpannerAssert } from "../../dist/index.js";
+import { createSpannerAssert } from "../../src/index.ts";
 
 process.on("exit", () => {
   spawnSync("docker", ["rm", "-f", emulatorContainer], {
@@ -30,7 +30,7 @@ const emulatorPort = Number(process.env.SPANNER_EMULATOR_PORT ?? "9010");
 const emulatorHost =
   process.env.SPANNER_EMULATOR_HOST ?? `127.0.0.1:${emulatorPort.toString()}`;
 const emulatorAdminPort = Number(
-  process.env.SPANNER_EMULATOR_ADMIN_PORT ?? "9020",
+  process.env.SPANNER_EMULATOR_ADMIN_PORT ?? "9020"
 );
 const emulatorContainer =
   process.env.SPANNER_EMULATOR_CONTAINER ?? "spanner-emulator";
@@ -57,7 +57,7 @@ type SpawnOptions = {
 async function runCommand(
   command: string,
   args: string[],
-  options: SpawnOptions = {},
+  options: SpawnOptions = {}
 ): Promise<void> {
   await new Promise<void>((resolve, reject) => {
     const child = spawn(command, args, {
@@ -86,7 +86,7 @@ async function runCommand(
 async function waitForPort(
   host: string,
   port: number,
-  retries = 30,
+  retries = 30
 ): Promise<void> {
   for (let attempt = 0; attempt < retries; attempt += 1) {
     const connected = await new Promise<boolean>((resolve) => {
@@ -130,7 +130,7 @@ async function startEmulator(): Promise<void> {
       emulatorContainer,
       dockerImage,
     ],
-    { stdio: "ignore" },
+    { stdio: "ignore" }
   );
   const host = emulatorHost.split(":")[0] ?? "127.0.0.1";
   await waitForPort(host, emulatorPort);
@@ -170,7 +170,7 @@ async function setupEmulator(): Promise<void> {
         `--directory=${tmpDir}`,
         "--schema_file=schema.sql",
       ],
-      { env: baseEnv, ignoreError: true },
+      { env: baseEnv, ignoreError: true }
     );
   } finally {
     await rm(tmpDir, { recursive: true, force: true });
@@ -178,7 +178,7 @@ async function setupEmulator(): Promise<void> {
 }
 
 async function seedSamples(
-  database: import("@google-cloud/spanner").Database,
+  database: import("@google-cloud/spanner").Database
 ): Promise<void> {
   const createdAt = "2024-01-01T00:00:00Z";
 
@@ -262,7 +262,7 @@ async function main(): Promise<void> {
       console.info("Running expectation assertions...");
       try {
         await spannerAssert.assert(
-          path.join(fixturesDir, "expectations", "samples.yaml"),
+          path.join(fixturesDir, "expectations", "samples.yaml")
         );
         console.info("E2E assertion succeeded.");
       } catch (error) {
