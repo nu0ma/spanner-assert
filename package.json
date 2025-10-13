@@ -1,13 +1,42 @@
 {
   "name": "spanner-assert",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "version": "0.1.0",
+  "description": "SpannerレコードをYAML期待値で検証するためのライブラリ",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "default": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
   },
-  "keywords": [],
+  "scripts": {
+    "build": "pnpm run clean && tsc -p tsconfig.json",
+    "clean": "rm -rf dist",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "keywords": [
+    "spanner",
+    "assertion",
+    "yaml",
+    "gcp"
+  ],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
+  "files": [
+    "dist"
+  ],
+  "devDependencies": {
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^22.7.4",
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.1"
+  },
+  "dependencies": {
+    "@google-cloud/spanner": "^7.6.1",
+    "js-yaml": "^4.1.0"
+  },
   "packageManager": "pnpm@10.14.0"
 }

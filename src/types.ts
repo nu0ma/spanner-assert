@@ -1,0 +1,19 @@
+export type TableColumnExpectations = Record<string, unknown>;
+
+export type TableExpectation = {
+  count?: number;
+  columns?: TableColumnExpectations;
+};
+
+export type ExpectationsFile = {
+  tables: Record<string, TableExpectation>;
+};
+
+export type SpannerConnectionConfig = {
+  projectId: string;
+  instanceId: string;
+  databaseId: string;
+  emulatorHost?: string;
+};
+
+export type ResolvedSpannerConnectionConfig = SpannerConnectionConfig;
