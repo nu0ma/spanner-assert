@@ -23,19 +23,11 @@ export type SpannerConnectionConfig = {
 export type ResolvedSpannerConnectionConfig = SpannerConnectionConfig;
 
 export type SpannerAssertOptions = {
-  connection?: Partial<SpannerConnectionConfig>;
+  connection: SpannerConnectionConfig;
   clientDependencies?: SpannerClientDependencies;
 };
 
-export type AssertOptions = {
-  connection?: Partial<SpannerConnectionConfig>;
-  baseDir?: string;
-};
-
 export type SpannerAssertInstance = {
-  assert(expectedFile: string, options?: AssertOptions): Promise<void>;
-  assertExpectations(
-    expectations: ExpectationsFile,
-    options?: AssertOptions,
-  ): Promise<void>;
+  assert(expectedFile: string): Promise<void>;
+  assertExpectations(expectations: ExpectationsFile): Promise<void>;
 };

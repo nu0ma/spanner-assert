@@ -30,10 +30,6 @@ export function openDatabase(
     };
   }
 
-  if (config.emulatorHost && !process.env.SPANNER_EMULATOR_HOST) {
-    process.env.SPANNER_EMULATOR_HOST = config.emulatorHost;
-  }
-
   const clientConfig: SpannerOptions = {
     projectId: config.projectId,
     ...(dependencies.clientConfig ?? {}),

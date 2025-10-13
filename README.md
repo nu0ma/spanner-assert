@@ -10,7 +10,7 @@ npm install spanner-assert
 
 ## Quick Start
 
-1. Start the Spanner emulator (optional) and set connection environment variables such as `SPANNER_ASSERT_PROJECT_ID`, `SPANNER_ASSERT_INSTANCE_ID`, `SPANNER_ASSERT_DATABASE_ID`, `SPANNER_EMULATOR_HOST`.
+1. Start the Spanner emulator (optional) and note the connection settings you want to validate against.
 
 2. Create an expectations YAML file:
 
@@ -44,7 +44,16 @@ tables:
 3. Run the assertion from a script:
 
 ```ts
-import { spannerAssert } from "spanner-assert";
+import { createSpannerAssert } from "spanner-assert";
+
+const spannerAssert = createSpannerAssert({
+  connection: {
+    projectId: "your-project",
+    instanceId: "your-instance",
+    databaseId: "your-database",
+    emulatorHost: "127.0.0.1:9010", // optional when using the emulator
+  },
+});
 
 await spannerAssert.assert("./expectations.yaml");
 ```

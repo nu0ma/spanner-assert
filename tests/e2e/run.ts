@@ -7,7 +7,7 @@ import { setTimeout as delay } from "node:timers/promises";
 
 import { Spanner } from "@google-cloud/spanner";
 
-import { spannerAssert } from "../../dist/index.js";
+import { createSpannerAssert } from "../../dist/index.js";
 
 process.on("exit", () => {
   spawnSync("docker", ["rm", "-f", emulatorContainer], {
@@ -38,6 +38,15 @@ const fixturesDir = "tests/e2e/fixtures";
 const schemaFile = path.join(fixturesDir, "schema", "schema.sql");
 
 const dockerImage = "gcr.io/cloud-spanner-emulator/emulator";
+
+const spannerAssert = createSpannerAssert({
+  connection: {
+    projectId,
+    instanceId,
+    databaseId,
+    emulatorHost,
+  },
+});
 
 type SpawnOptions = {
   env?: NodeJS.ProcessEnv;

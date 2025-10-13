@@ -6,27 +6,20 @@ import type {
   ExpectationsFile,
   SpannerAssertOptions,
   SpannerAssertInstance,
-  AssertOptions,
 } from "./types.js";
 
 export function createSpannerAssert(
-  options: SpannerAssertOptions = {},
+  options: SpannerAssertOptions
 ): SpannerAssertInstance {
-  const openHandle = (overrides: AssertOptions) => {
-    const connectionOverrides = overrides.connection ?? {};
-    const mergedConnection = {
-      ...options.connection,
-      ...connectionOverrides,
-    };
-    const resolved = resolveConnectionConfig(mergedConnection);
-    return openDatabase(resolved, options.clientDependencies ?? {});
-  };
+  const resolvedConfig = resolveConnectionConfig(options.connection);
+  const dependencies = options.clientDependencies ?? {};
+
+  const openHandle = () => openDatabase(resolvedConfig, dependencies);
 
   const assertWithExpectations = async (
-    expectations: ExpectationsFile,
-    overrides: AssertOptions,
+    expectations: ExpectationsFile
   ): Promise<void> => {
-    const handle = openHandle(overrides);
+    const handle = openHandle();
 
     try {
       await assertExpectations(handle.database, expectations);
@@ -35,21 +28,15 @@ export function createSpannerAssert(
     }
   };
 
-  const assert = async (
-    expectedFile: string,
-    overrides: AssertOptions = {},
-  ): Promise<void> => {
-    const expectations = await loadExpectationsFromFile(expectedFile, {
-      baseDir: overrides.baseDir,
-    });
-    await assertWithExpectations(expectations, overrides);
+  const assert = async (expectedFile: string): Promise<void> => {
+    const expectations = await loadExpectationsFromFile(expectedFile);
+    await assertWithExpectations(expectations);
   };
 
   const assertExpectationsPublic = async (
-    expectations: ExpectationsFile,
-    overrides: AssertOptions = {},
+    expectations: ExpectationsFile
   ): Promise<void> => {
-    await assertWithExpectations(expectations, overrides);
+    await assertWithExpectations(expectations);
   };
 
   return {
