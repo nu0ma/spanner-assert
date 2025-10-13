@@ -7,6 +7,5 @@ export default defineConfig({
   target: "node18",
   dts: true,
   minify: true,
-  splitting: false,
   sourcemap: true,
 });
