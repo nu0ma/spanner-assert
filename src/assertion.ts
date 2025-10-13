@@ -17,7 +17,7 @@ type QueryRequest = {
 
 export async function assertExpectations(
   database: Database,
-  expectations: ExpectationsFile,
+  expectations: ExpectationsFile
 ): Promise<void> {
   for (const [tableName, expectation] of Object.entries(expectations.tables)) {
     await assertTable(database, tableName, expectation);
@@ -27,7 +27,7 @@ export async function assertExpectations(
 async function assertTable(
   database: Database,
   tableName: string,
-  expectation: TableExpectation,
+  expectation: TableExpectation
 ): Promise<void> {
   const quotedTableName = quoteIdentifier(tableName);
 
@@ -40,7 +40,7 @@ async function assertTable(
           expected: expectation.count,
           actual: actualCount,
           table: tableName,
-        },
+        }
       );
     }
   }
@@ -49,7 +49,7 @@ async function assertTable(
     const matchedCount = await fetchCount(
       database,
       quotedTableName,
-      expectation.columns,
+      expectation.columns
     );
     if (matchedCount === 0) {
       throw new SpannerAssertionError(
@@ -57,7 +57,7 @@ async function assertTable(
         {
           table: tableName,
           columns: expectation.columns,
-        },
+        }
       );
     }
   }
@@ -66,7 +66,7 @@ async function assertTable(
 async function fetchCount(
   database: Database,
   quotedTableName: string,
-  conditions?: TableColumnExpectations,
+  conditions?: TableColumnExpectations
 ): Promise<number> {
   const { whereClause, params } = buildWhereClause(conditions);
 
@@ -106,7 +106,7 @@ function normalizeNumericValue(value: unknown): number {
     "Failed to convert value to a numeric type.",
     {
       value,
-    },
+    }
   );
 }
 
@@ -116,7 +116,7 @@ function quoteIdentifier(identifier: string): string {
       "Identifier contains unsupported characters.",
       {
         identifier,
-      },
+      }
     );
   }
 
