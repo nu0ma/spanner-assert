@@ -2,38 +2,42 @@
   "name": "spanner-assert",
   "version": "0.1.0",
   "description": "Library for validating Cloud Spanner records against YAML expectations",
-  "type": "module",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "exports": {
-    ".": {
-      "default": "./dist/index.js",
-      "types": "./dist/index.d.ts"
-    }
-  },
-  "scripts": {
-    "preinstall": "npx only-allow pnpm",
-    "build": "pnpm run clean && tsdown --config tsdown.config.ts",
-    "clean": "rm -rf dist",
-    "lint": "eslint --cache .",
-    "lint:fix": "eslint --cache . --fix",
-    "typecheck": "tsc --noEmit",
-    "prettier": "prettier --check 'src/**/*.{js,jsx,ts,tsx}'",
-    "prettier:fix": "prettier --write 'src/**/*.{js,jsx,ts,tsx}'",
-    "test": "vitest run",
-    "test:e2e": "pnpm run build && tsx tests/e2e/run.ts"
-  },
   "keywords": [
     "spanner",
     "assertion",
     "yaml",
     "gcp"
   ],
-  "author": "nu0ma",
   "license": "MIT",
+  "author": "nu0ma",
+  "type": "module",
+  "exports": {
+    ".": {
+      "default": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "files": [
     "dist"
   ],
+  "scripts": {
+    "build": "pnpm run clean && tsdown --config tsdown.config.ts",
+    "clean": "rm -rf dist",
+    "preinstall": "npx only-allow pnpm",
+    "lint": "eslint --cache .",
+    "lint:fix": "eslint --cache . --fix",
+    "prettier": "prettier --check 'src/**/*.{js,jsx,ts,tsx}'",
+    "prettier:fix": "prettier --write 'src/**/*.{js,jsx,ts,tsx}'",
+    "test": "vitest run",
+    "test:e2e": "pnpm run build && tsx tests/e2e/run.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@google-cloud/spanner": "^7.6.1",
+    "js-yaml": "^4.1.0"
+  },
   "devDependencies": {
     "@eslint/js": "^9.13.0",
     "@types/js-yaml": "^4.0.9",
@@ -52,10 +56,6 @@
     "tsx": "^4.19.1",
     "typescript": "^5.6.3",
     "vitest": "^2.1.1"
-  },
-  "dependencies": {
-    "@google-cloud/spanner": "^7.6.1",
-    "js-yaml": "^4.1.0"
   },
   "packageManager": "pnpm@10.17.0"
 }
