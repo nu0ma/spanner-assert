@@ -12,10 +12,14 @@
     }
   },
   "scripts": {
+    "preinstall": "npx only-allow pnpm",
     "build": "pnpm run clean && tsdown --config tsdown.config.ts",
     "clean": "rm -rf dist",
-    "lint": "eslint . --ext .ts,.tsx",
+    "lint": "eslint --cache .",
+    "lint:fix": "eslint --cache . --fix",
     "typecheck": "tsc --noEmit",
+    "prettier": "prettier --check 'src/**/*.{js,jsx,ts,tsx}'",
+    "prettier:fix": "prettier --write 'src/**/*.{js,jsx,ts,tsx}'",
     "test": "vitest run",
     "test:e2e": "pnpm run build && tsx tests/e2e/run.ts"
   },
