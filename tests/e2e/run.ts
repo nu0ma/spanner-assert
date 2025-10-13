@@ -7,9 +7,9 @@ import { createSpannerAssert } from "../../src/index.ts";
 const fixturesDir = "tests/e2e/fixtures";
 
 async function seedSamples(
-  database: import("@google-cloud/spanner").Database,
+  database: import("@google-cloud/spanner").Database
 ): Promise<void> {
-  const createdAt = "2024-01-01T00:00:00Z";
+  const createdAt = new Date("2024-01-01T00:00:00Z").toISOString();
 
   await database.runTransactionAsync(async (transaction) => {
     await transaction.batchUpdate([
@@ -24,7 +24,7 @@ async function seedSamples(
       },
       {
         sql: `INSERT INTO Users (UserID, Name, Email, Status, CreatedAt)
-               VALUES (@userId, @name, @email, @status, @createdAt)`,
+               VALUES (@userId, @name, @email, @status, TIMESTAMP(@createdAt))`,
         params: {
           userId: "user-001",
           name: "Alice Example",
@@ -32,10 +32,17 @@ async function seedSamples(
           status: 1,
           createdAt,
         },
+        types: {
+          userId: { type: "string" },
+          name: { type: "string" },
+          email: { type: "string" },
+          status: { type: "int64" },
+          createdAt: { type: "string" },
+        },
       },
       {
         sql: `INSERT INTO Products (ProductID, Name, Price, IsActive, CategoryID, CreatedAt)
-               VALUES (@productId, @name, @price, @isActive, @categoryId, @createdAt)`,
+               VALUES (@productId, @name, @price, @isActive, @categoryId, TIMESTAMP(@createdAt))`,
         params: {
           productId: "product-001",
           name: "Example Product",
@@ -44,17 +51,29 @@ async function seedSamples(
           categoryId: null,
           createdAt,
         },
+        types: {
+          productId: { type: "string" },
+          name: { type: "string" },
+          price: { type: "int64" },
+          isActive: { type: "bool" },
+          categoryId: { type: "string" },
+          createdAt: { type: "string" },
+        },
       },
       {
-        sql: `INSERT INTO Books (BookID, Title, Author, PublishedYear, JSONData)
-               VALUES (@bookId, @title, @author, @publishedYear,
-                       @jsonData)` ,
+        sql: `INSERT INTO Books (BookID, Title, Author, PublishedYear)
+               VALUES (@bookId, @title, @author, @publishedYear)`,
         params: {
           bookId: "book-001",
           title: "Example Book",
           author: "Jane Doe",
           publishedYear: 2024,
-          jsonData: '{"genre":"fiction","pages":320}',
+        },
+        types: {
+          bookId: { type: "string" },
+          title: { type: "string" },
+          author: { type: "string" },
+          publishedYear: { type: "int64" },
         },
       },
     ]);
@@ -68,6 +87,15 @@ async function main(): Promise<void> {
   const databaseId = process.env.SPANNER_DATABASE ?? "e2e-database";
   const emulatorHost = process.env.SPANNER_EMULATOR_HOST ?? "127.0.0.1:9010";
 
+  const spanner = new Spanner({
+    projectId,
+    servicePath: emulatorHost.split(":")[0],
+    port: Number.parseInt(emulatorHost.split(":")[1] || "9010"),
+  });
+
+  const instance = spanner.instance(instanceId);
+  const database = instance.database(databaseId);
+
   const spannerAssert = createSpannerAssert({
     connection: {
       projectId,
@@ -75,31 +103,37 @@ async function main(): Promise<void> {
       databaseId,
       emulatorHost,
     },
+    clientDependencies: {
+      database,
+    },
   });
-
-  const spanner = new Spanner({
-    projectId,
-  });
-
-  const instance = spanner.instance(instanceId);
-  const database = instance.database(databaseId);
 
   try {
-    console.info("Seeding sample data...");
+    console.log("Seeding sample data...");
     await seedSamples(database);
-    console.info("Running expectation assertions...");
-    await spannerAssert.assert(path.join(fixturesDir, "expectations", "samples.yaml"));
-    console.info("E2E assertion succeeded.");
-  } finally {
-    console.info("Closing client resources...");
-    await database.close();
-    await spanner.close();
-  }
 
-  console.info("E2E script completed.");
+    console.log("Running expectation assertions...");
+    await spannerAssert.assert(
+      path.join(fixturesDir, "expectations", "samples.yaml")
+    );
+
+    console.log("✅ All assertions passed!");
+  } catch (error) {
+    console.error("❌ E2E test failed:");
+    console.error(error);
+    throw error;
+  } finally {
+    console.log("Closing client resources...");
+    await database.close();
+    spanner.close();
+  }
 }
 
-main().catch((error) => {
-  console.error("E2E assertion failed:", error);
-  process.exitCode = 1;
-});
+main()
+  .then(() => {
+    process.exit(0);
+  })
+  .catch((error) => {
+    console.error("Fatal error:", error);
+    process.exit(1);
+  });

@@ -17,7 +17,7 @@ type QueryRequest = {
 
 export async function assertExpectations(
   database: Database,
-  expectations: ExpectationsFile,
+  expectations: ExpectationsFile
 ): Promise<void> {
   for (const [tableName, expectation] of Object.entries(expectations.tables)) {
     await assertTable(database, tableName, expectation);
@@ -27,7 +27,7 @@ export async function assertExpectations(
 async function assertTable(
   database: Database,
   tableName: string,
-  expectation: TableExpectation,
+  expectation: TableExpectation
 ): Promise<void> {
   const quotedTableName = quoteIdentifier(tableName);
 
@@ -35,12 +35,12 @@ async function assertTable(
     const actualCount = await fetchCount(database, quotedTableName);
     if (actualCount !== expectation.count) {
       throw new SpannerAssertionError(
-        `Row count mismatch detected for ${tableName}.`,
+        `Row count mismatch in table "${tableName}".`,
         {
+          table: tableName,
           expected: expectation.count,
           actual: actualCount,
-          table: tableName,
-        },
+        }
       );
     }
   }
@@ -49,15 +49,18 @@ async function assertTable(
     const matchedCount = await fetchCount(
       database,
       quotedTableName,
-      expectation.columns,
+      expectation.columns
     );
     if (matchedCount === 0) {
+      // Fetch actual data to show in error message
+      const actualRows = await fetchRows(database, quotedTableName, 5);
       throw new SpannerAssertionError(
-        `No rows matched the expected column values in ${tableName}.`,
+        `No rows matched the expected column values in table "${tableName}".`,
         {
           table: tableName,
-          columns: expectation.columns,
-        },
+          expected: expectation.columns,
+          actual: actualRows.length > 0 ? actualRows : "No rows found in table",
+        }
       );
     }
   }
@@ -66,7 +69,7 @@ async function assertTable(
 async function fetchCount(
   database: Database,
   quotedTableName: string,
-  conditions?: TableColumnExpectations,
+  conditions?: TableColumnExpectations
 ): Promise<number> {
   const { whereClause, params } = buildWhereClause(conditions);
 
@@ -84,6 +87,19 @@ async function fetchCount(
   }
 
   return normalizeNumericValue(rows[0].toJSON().total);
+}
+
+async function fetchRows(
+  database: Database,
+  quotedTableName: string,
+  limit: number
+): Promise<Record<string, unknown>[]> {
+  const query: QueryRequest = {
+    sql: `SELECT * FROM ${quotedTableName} LIMIT ${limit}`,
+  };
+
+  const [rows] = await database.run(query);
+  return rows.map((row) => row.toJSON());
 }
 
 function normalizeNumericValue(value: unknown): number {
@@ -106,7 +122,7 @@ function normalizeNumericValue(value: unknown): number {
     "Failed to convert value to a numeric type.",
     {
       value,
-    },
+    }
   );
 }
 
@@ -116,7 +132,7 @@ function quoteIdentifier(identifier: string): string {
       "Identifier contains unsupported characters.",
       {
         identifier,
-      },
+      }
     );
   }
 

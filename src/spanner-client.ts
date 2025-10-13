@@ -19,7 +19,7 @@ export type DatabaseHandle = {
 
 export function openDatabase(
   config: ResolvedSpannerConnectionConfig,
-  dependencies: SpannerClientDependencies = {},
+  dependencies: SpannerClientDependencies = {}
 ): DatabaseHandle {
   if (dependencies.database) {
     return {
@@ -34,6 +34,15 @@ export function openDatabase(
     projectId: config.projectId,
     ...(dependencies.clientConfig ?? {}),
   };
+
+  // Add emulator host configuration if provided
+  if (config.emulatorHost) {
+    clientConfig.servicePath = config.emulatorHost.split(":")[0];
+    clientConfig.port = Number.parseInt(
+      config.emulatorHost.split(":")[1] || "9010"
+    );
+    clientConfig.sslCreds = undefined;
+  }
 
   const spanner = dependencies.spannerInstance ?? new Spanner(clientConfig);
 
