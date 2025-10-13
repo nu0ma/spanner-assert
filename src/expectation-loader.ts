@@ -22,7 +22,7 @@ export type LoadExpectationOptions = {
 
 export async function loadExpectationsFromFile(
   expectedPath: string,
-  options: LoadExpectationOptions = {},
+  options: LoadExpectationOptions = {}
 ): Promise<ExpectationsFile> {
   const normalizedPath = path.isAbsolute(expectedPath)
     ? expectedPath
@@ -47,11 +47,11 @@ export async function loadExpectationsFromFile(
   const normalizedTables: Record<string, TableExpectation> = {};
 
   for (const [tableName, expectation] of Object.entries(
-    tables as Record<string, unknown>,
+    tables as Record<string, unknown>
   )) {
     if (!expectation || typeof expectation !== "object") {
       throw new InvalidExpectationFileError(
-        `${tableName} definition must be an object.`,
+        `${tableName} definition must be an object.`
       );
     }
 
@@ -60,7 +60,7 @@ export async function loadExpectationsFromFile(
 
     if (count !== undefined && typeof count !== "number") {
       throw new InvalidExpectationFileError(
-        `${tableName}.count must be numeric.`,
+        `${tableName}.count must be numeric.`
       );
     }
 
@@ -69,7 +69,7 @@ export async function loadExpectationsFromFile(
       (typeof columns !== "object" || Array.isArray(columns))
     ) {
       throw new InvalidExpectationFileError(
-        `${tableName}.columns must be an object.`,
+        `${tableName}.columns must be an object.`
       );
     }
 
@@ -80,7 +80,7 @@ export async function loadExpectationsFromFile(
     const unexpectedKeys = Object.keys(rest);
     if (unexpectedKeys.length > 0) {
       throw new InvalidExpectationFileError(
-        `${tableName} contains unsupported keys: ${unexpectedKeys.join(", ")}`,
+        `${tableName} contains unsupported keys: ${unexpectedKeys.join(", ")}`
       );
     }
 
@@ -97,13 +97,13 @@ export async function loadExpectationsFromFile(
 
 function validateColumnValues(
   tableName: string,
-  columns: Record<string, unknown>,
+  columns: Record<string, unknown>
 ): void {
   for (const [columnName, value] of Object.entries(columns)) {
     if (!isSupportedColumnValue(value)) {
       const actualType = value === null ? "null" : typeof value;
       throw new InvalidExpectationFileError(
-        `${tableName}.columns.${columnName} must be a string, number, boolean, or null (received ${actualType}).`,
+        `${tableName}.columns.${columnName} must be a string, number, boolean, or null (received ${actualType}).`
       );
     }
   }
