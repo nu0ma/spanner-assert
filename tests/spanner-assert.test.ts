@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { createSpannerAssert, SpannerAssertionError } from "../src/index.js";
-import type { ExpectationsFile } from "../src/types.js";
+import { createSpannerAssert, SpannerAssertionError } from "../src/index.ts";
+import type { ExpectationsFile } from "../src/types.ts";
 
 type Row = { toJSON(): Record<string, unknown> };
 type RunResult = Array<Row>;

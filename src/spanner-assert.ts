@@ -1,12 +1,12 @@
-import { assertExpectations } from "./assertion.js";
-import { resolveConnectionConfig } from "./config.js";
-import { loadExpectationsFromFile } from "./expectation-loader.js";
-import { openDatabase } from "./spanner-client.js";
+import { assertExpectations } from "./assertion.ts";
+import { resolveConnectionConfig } from "./config.ts";
+import { loadExpectationsFromFile } from "./expectation-loader.ts";
+import { openDatabase } from "./spanner-client.ts";
 import type {
   ExpectationsFile,
   SpannerAssertOptions,
   SpannerAssertInstance,
-} from "./types.js";
+} from "./types.ts";
 
 export function createSpannerAssert(
   options: SpannerAssertOptions

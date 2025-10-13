@@ -4,7 +4,7 @@ import {
   Spanner,
 } from "@google-cloud/spanner";
 
-import type { ResolvedSpannerConnectionConfig } from "./types.js";
+import type { ResolvedSpannerConnectionConfig } from "./types.ts";
 
 export type SpannerClientDependencies = {
   spannerInstance?: Spanner;

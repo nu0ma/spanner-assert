@@ -1,4 +1,4 @@
-import type { SpannerClientDependencies } from "./spanner-client.js";
+import type { SpannerClientDependencies } from "./spanner-client.ts";
 
 export type ColumnValue = string | number | boolean | null;
 

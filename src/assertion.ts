@@ -1,12 +1,12 @@
 import type { Database } from "@google-cloud/spanner";
 
-import { SpannerAssertionError } from "./errors.js";
+import { SpannerAssertionError } from "./errors.ts";
 import type {
   ColumnValue,
   ExpectationsFile,
   TableColumnExpectations,
   TableExpectation,
-} from "./types.js";
+} from "./types.ts";
 
 const IDENTIFIER_PATTERN = /^[A-Za-z][A-Za-z0-9_]*$/;
 

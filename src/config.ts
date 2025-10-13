@@ -1,7 +1,7 @@
 import type {
   ResolvedSpannerConnectionConfig,
   SpannerConnectionConfig,
-} from "./types.js";
+} from "./types.ts";
 
 export class MissingConfigurationError extends Error {
   constructor(field: string) {

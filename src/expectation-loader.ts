@@ -7,7 +7,7 @@ import type {
   ColumnValue,
   ExpectationsFile,
   TableExpectation,
-} from "./types.js";
+} from "./types.ts";
 
 export class InvalidExpectationFileError extends Error {
   constructor(message: string) {
