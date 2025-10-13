@@ -1,4 +1,4 @@
-import { createSpannerAssert } from "./spanner-assert.js";
+import { createSpannerAssert } from "./spanner-assert.ts";
 
 export const spannerAssert = createSpannerAssert();
 
