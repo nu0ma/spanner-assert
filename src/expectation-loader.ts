@@ -3,7 +3,7 @@ import path from 'node:path';
 
 import yaml from 'js-yaml';
 
-import type { ExpectationsFile, TableExpectation } from './types.js';
+import type { ColumnValue, ExpectationsFile, TableExpectation } from './types.js';
 
 export class InvalidExpectationFileError extends Error {
   constructor(message: string) {
@@ -57,6 +57,10 @@ export async function loadExpectationsFromFile(
       throw new InvalidExpectationFileError(`${tableName}.columns must be an object.`);
     }
 
+    if (columns) {
+      validateColumnValues(tableName, columns as Record<string, unknown>);
+    }
+
     const unexpectedKeys = Object.keys(rest);
     if (unexpectedKeys.length > 0) {
       throw new InvalidExpectationFileError(
@@ -73,4 +77,24 @@ export async function loadExpectationsFromFile(
   return {
     tables: normalizedTables,
   };
+}
+
+function validateColumnValues(tableName: string, columns: Record<string, unknown>): void {
+  for (const [columnName, value] of Object.entries(columns)) {
+    if (!isSupportedColumnValue(value)) {
+      const actualType = value === null ? 'null' : typeof value;
+      throw new InvalidExpectationFileError(
+        `${tableName}.columns.${columnName} must be a string, number, boolean, or null (received ${actualType}).`,
+      );
+    }
+  }
+}
+
+function isSupportedColumnValue(value: unknown): value is ColumnValue {
+  return (
+    value === null ||
+    typeof value === 'string' ||
+    typeof value === 'number' ||
+    typeof value === 'boolean'
+  );
 }

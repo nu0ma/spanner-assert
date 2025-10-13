@@ -197,7 +197,6 @@ async function main(): Promise<void> {
 
     const spanner = new Spanner({
       projectId,
-      emulatorHost,
     });
 
     const instance = spanner.instance(instanceId);

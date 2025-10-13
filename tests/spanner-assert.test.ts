@@ -5,6 +5,7 @@ import type { ExpectationsFile } from '../src/types.js';
 
 type Row = { toJSON(): Record<string, unknown> };
 type RunResult = Array<Row>;
+type QueryRequest = { sql: string; params?: Record<string, unknown> };
 
 function createRow(values: Record<string, unknown>) {
   return {
@@ -57,6 +58,29 @@ describe('SpannerAssert', () => {
 
     await expect(instance.assertExpectations(expectations)).resolves.toBeUndefined();
     expect(run).toHaveBeenCalledTimes(2);
+    await instance.close();
+  });
+
+  it('allows matching records with null column expectations', async () => {
+    const expectations: ExpectationsFile = {
+      tables: {
+        Samples: {
+          columns: {
+            Description: null,
+          },
+        },
+      },
+    };
+
+    const runResults: RunResult[] = [[createRow({ total: '1' })]];
+    const { instance, run } = createInstance(runResults);
+
+    await expect(instance.assertExpectations(expectations)).resolves.toBeUndefined();
+
+    const [[query]] = run.mock.calls as unknown as [QueryRequest[]];
+    expect(query.sql).toMatch(/`Description` IS NULL/);
+    expect(query.params ?? {}).toEqual({});
+
     await instance.close();
   });
 

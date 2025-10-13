@@ -1,9 +1,19 @@
-import type { Database, ExecuteSqlRequest } from '@google-cloud/spanner';
+import type { Database } from '@google-cloud/spanner';
 
 import { SpannerAssertionError } from './errors.js';
-import type { ExpectationsFile, TableExpectation } from './types.js';
+import type {
+  ColumnValue,
+  ExpectationsFile,
+  TableColumnExpectations,
+  TableExpectation,
+} from './types.js';
 
 const IDENTIFIER_PATTERN = /^[A-Za-z][A-Za-z0-9_]*$/;
+
+type QueryRequest = {
+  sql: string;
+  params?: Record<string, ColumnValue>;
+};
 
 export async function assertExpectations(
   database: Database,
@@ -33,7 +43,7 @@ async function assertTable(
   }
 
   if (expectation.columns) {
-    const matchedCount = await fetchMatchCount(database, quotedTableName, expectation.columns);
+    const matchedCount = await fetchCount(database, quotedTableName, expectation.columns);
     if (matchedCount === 0) {
       throw new SpannerAssertionError(`No rows matched the expected column values in ${tableName}.`, {
         table: tableName,
@@ -43,43 +53,20 @@ async function assertTable(
   }
 }
 
-async function fetchCount(database: Database, quotedTableName: string): Promise<number> {
-  const query: ExecuteSqlRequest = {
-    sql: `SELECT COUNT(*) AS total FROM ${quotedTableName}`,
-  };
-  const [rows] = await database.run(query);
-  if (!rows.length) {
-    return 0;
-  }
-
-  return normalizeNumericValue(rows[0].toJSON().total);
-}
-
-async function fetchMatchCount(
+async function fetchCount(
   database: Database,
   quotedTableName: string,
-  conditions: Record<string, unknown>,
+  conditions?: TableColumnExpectations,
 ): Promise<number> {
-  const clauses: string[] = [];
-  const params: Record<string, unknown> = {};
-  let index = 0;
+  const { whereClause, params } = buildWhereClause(conditions);
 
-  for (const [column, value] of Object.entries(conditions)) {
-    if (value === null) {
-      clauses.push(`${quoteIdentifier(column)} IS NULL`);
-      continue;
-    }
-
-    const paramName = `p${index++}`;
-    clauses.push(`${quoteIdentifier(column)} = @${paramName}`);
-    params[paramName] = value;
-  }
-
-  const whereClause = clauses.length > 0 ? `WHERE ${clauses.join(' AND ')}` : '';
-  const query: ExecuteSqlRequest = {
-    sql: `SELECT COUNT(*) AS total FROM ${quotedTableName} ${whereClause}`,
-    params,
+  const query: QueryRequest = {
+    sql: `SELECT COUNT(*) AS total FROM ${quotedTableName}${whereClause}`,
   };
+
+  if (params && Object.keys(params).length > 0) {
+    query.params = params;
+  }
 
   const [rows] = await database.run(query);
   if (!rows.length) {
@@ -118,4 +105,31 @@ function quoteIdentifier(identifier: string): string {
   }
 
   return `\`${identifier}\``;
+}
+
+function buildWhereClause(conditions?: TableColumnExpectations): {
+  whereClause: string;
+  params: Record<string, ColumnValue>;
+} {
+  if (!conditions || Object.keys(conditions).length === 0) {
+    return { whereClause: '', params: {} };
+  }
+
+  const clauses: string[] = [];
+  const params: Record<string, ColumnValue> = {};
+  let index = 0;
+
+  for (const [column, value] of Object.entries(conditions)) {
+    if (value === null) {
+      clauses.push(`${quoteIdentifier(column)} IS NULL`);
+      continue;
+    }
+
+    const paramName = `p${index++}`;
+    clauses.push(`${quoteIdentifier(column)} = @${paramName}`);
+    params[paramName] = value;
+  }
+
+  const whereClause = clauses.length > 0 ? ` WHERE ${clauses.join(' AND ')}` : '';
+  return { whereClause, params };
 }

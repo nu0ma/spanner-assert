@@ -1,4 +1,6 @@
-export type TableColumnExpectations = Record<string, unknown>;
+export type ColumnValue = string | number | boolean | null;
+
+export type TableColumnExpectations = Record<string, ColumnValue>;
 
 export type TableExpectation = {
   count?: number;

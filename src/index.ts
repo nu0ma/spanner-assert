@@ -1,11 +1,7 @@
 import { assertExpectations } from './assertion.js';
 import { resolveConnectionConfig } from './config.js';
 import { loadExpectationsFromFile } from './expectation-loader.js';
-import {
-  createSpannerClientProvider,
-  type SpannerClientDependencies,
-  type SpannerClientProvider,
-} from './spanner-client.js';
+import { openDatabase, type DatabaseHandle, type SpannerClientDependencies } from './spanner-client.js';
 import type { ExpectationsFile, SpannerConnectionConfig } from './types.js';
 
 export type SpannerAssertOptions = {
@@ -30,43 +26,40 @@ export type SpannerAssertInstance = {
 export function createSpannerAssert(
   options: SpannerAssertOptions = {},
 ): SpannerAssertInstance {
-  let providerRef: SpannerClientProvider | null = null;
+  let cachedHandle: DatabaseHandle | null = null;
 
-  const ensureProvider = (overrides: AssertOptions): [SpannerClientProvider, boolean] => {
+  const ensureHandle = (overrides: AssertOptions): [DatabaseHandle, boolean] => {
     const connectionOverrides = overrides.connection ?? {};
     const mergedConnection = {
       ...options.connection,
       ...connectionOverrides,
     };
     const resolved = resolveConnectionConfig(mergedConnection);
-    const useTemporaryProvider = Object.keys(connectionOverrides).length > 0;
+    const expectsTemporaryHandle = Object.keys(connectionOverrides).length > 0;
 
-    if (useTemporaryProvider) {
-      const temporaryProvider = createSpannerClientProvider(
-        resolved,
-        options.clientDependencies ?? {},
-      );
-      return [temporaryProvider, true];
+    if (expectsTemporaryHandle) {
+      const temporaryHandle = openDatabase(resolved, options.clientDependencies ?? {});
+      return [temporaryHandle, true];
     }
 
-    if (!providerRef) {
-      providerRef = createSpannerClientProvider(resolved, options.clientDependencies ?? {});
+    if (!cachedHandle) {
+      cachedHandle = openDatabase(resolved, options.clientDependencies ?? {});
     }
 
-    return [providerRef, false];
+    return [cachedHandle, false];
   };
 
   const assertWithExpectations = async (
     expectations: ExpectationsFile,
     overrides: AssertOptions,
   ): Promise<void> => {
-    const [provider, shouldDispose] = ensureProvider(overrides);
+    const [handle, shouldDispose] = ensureHandle(overrides);
 
     try {
-      await assertExpectations(provider.getDatabase(), expectations);
+      await assertExpectations(handle.database, expectations);
     } finally {
       if (shouldDispose) {
-        await provider.close();
+        await handle.close();
       }
     }
   };
@@ -86,9 +79,9 @@ export function createSpannerAssert(
   };
 
   const close = async (): Promise<void> => {
-    if (providerRef) {
-      await providerRef.close();
-      providerRef = null;
+    if (cachedHandle) {
+      await cachedHandle.close();
+      cachedHandle = null;
     }
   };
 
@@ -103,4 +96,3 @@ export const spannerAssert = createSpannerAssert();
 
 export { SpannerAssertionError } from './errors.js';
 export type { ExpectationsFile, SpannerConnectionConfig } from './types.js';
-export type { AssertOptions, SpannerAssertOptions, SpannerAssertInstance };
