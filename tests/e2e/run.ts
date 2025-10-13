@@ -125,7 +125,7 @@ async function main(): Promise<void> {
   } finally {
     console.log("Closing client resources...");
     await database.close();
-    await spanner.close();
+    spanner.close();
   }
 }
 

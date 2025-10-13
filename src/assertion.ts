@@ -35,11 +35,11 @@ async function assertTable(
     const actualCount = await fetchCount(database, quotedTableName);
     if (actualCount !== expectation.count) {
       throw new SpannerAssertionError(
-        `Row count mismatch detected for ${tableName}.`,
+        `Row count mismatch in table "${tableName}".`,
         {
+          table: tableName,
           expected: expectation.count,
           actual: actualCount,
-          table: tableName,
         }
       );
     }
@@ -52,11 +52,14 @@ async function assertTable(
       expectation.columns
     );
     if (matchedCount === 0) {
+      // Fetch actual data to show in error message
+      const actualRows = await fetchRows(database, quotedTableName, 5);
       throw new SpannerAssertionError(
-        `No rows matched the expected column values in ${tableName}.`,
+        `No rows matched the expected column values in table "${tableName}".`,
         {
           table: tableName,
-          columns: expectation.columns,
+          expected: expectation.columns,
+          actual: actualRows.length > 0 ? actualRows : "No rows found in table",
         }
       );
     }
@@ -84,6 +87,19 @@ async function fetchCount(
   }
 
   return normalizeNumericValue(rows[0].toJSON().total);
+}
+
+async function fetchRows(
+  database: Database,
+  quotedTableName: string,
+  limit: number
+): Promise<Record<string, unknown>[]> {
+  const query: QueryRequest = {
+    sql: `SELECT * FROM ${quotedTableName} LIMIT ${limit}`,
+  };
+
+  const [rows] = await database.run(query);
+  return rows.map((row) => row.toJSON());
 }
 
 function normalizeNumericValue(value: unknown): number {
