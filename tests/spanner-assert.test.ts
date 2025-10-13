@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { SpannerAssert, SpannerAssertionError } from '../src/index.js';
+import { createSpannerAssert, SpannerAssertionError } from '../src/index.js';
 import type { ExpectationsFile } from '../src/types.js';
 
 type Row = { toJSON(): Record<string, unknown> };
@@ -12,13 +12,15 @@ function createRow(values: Record<string, unknown>) {
   };
 }
 
-function createSpannerAssert(runMocks: RunResult[]) {
+function createInstance(runMocks: RunResult[]) {
   const run = vi.fn();
-  runMocks.forEach((result) => run.mockResolvedValueOnce([result, undefined]));
+  for (const result of runMocks) {
+    run.mockResolvedValueOnce([result, undefined]);
+  }
   const close = vi.fn().mockResolvedValue(undefined);
   const database = { run, close } as unknown as import('@google-cloud/spanner').Database;
 
-  const instance = new SpannerAssert({
+  const instance = createSpannerAssert({
     connection: {
       projectId: 'project',
       instanceId: 'instance',
@@ -51,7 +53,7 @@ describe('SpannerAssert', () => {
       [createRow({ total: '1' })],
     ];
 
-    const { instance, run } = createSpannerAssert(runResults);
+    const { instance, run } = createInstance(runResults);
 
     await expect(instance.assertExpectations(expectations)).resolves.toBeUndefined();
     expect(run).toHaveBeenCalledTimes(2);
@@ -68,7 +70,7 @@ describe('SpannerAssert', () => {
     };
 
     const runResults: RunResult[] = [[createRow({ total: '1' })]];
-    const { instance } = createSpannerAssert(runResults);
+    const { instance } = createInstance(runResults);
 
     await expect(instance.assertExpectations(expectations)).rejects.toBeInstanceOf(
       SpannerAssertionError,
@@ -88,7 +90,7 @@ describe('SpannerAssert', () => {
     };
 
     const runResults: RunResult[] = [[createRow({ total: '0' })]];
-    const { instance } = createSpannerAssert(runResults);
+    const { instance } = createInstance(runResults);
 
     await expect(instance.assertExpectations(expectations)).rejects.toBeInstanceOf(
       SpannerAssertionError,
@@ -106,7 +108,7 @@ describe('SpannerAssert', () => {
     };
 
     const runResults: RunResult[] = [];
-    const { instance } = createSpannerAssert(runResults);
+    const { instance } = createInstance(runResults);
 
     await expect(instance.assertExpectations(expectations)).rejects.toBeInstanceOf(
       SpannerAssertionError,

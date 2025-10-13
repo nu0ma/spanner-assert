@@ -1,7 +1,11 @@
-import { resolveConnectionConfig } from './config.js';
 import { assertExpectations } from './assertion.js';
+import { resolveConnectionConfig } from './config.js';
 import { loadExpectationsFromFile } from './expectation-loader.js';
-import { SpannerClientProvider, type SpannerClientDependencies } from './spanner-client.js';
+import {
+  createSpannerClientProvider,
+  type SpannerClientDependencies,
+  type SpannerClientProvider,
+} from './spanner-client.js';
 import type { ExpectationsFile, SpannerConnectionConfig } from './types.js';
 
 export type SpannerAssertOptions = {
@@ -14,77 +18,89 @@ export type AssertOptions = {
   baseDir?: string;
 };
 
-export class SpannerAssert {
-  #options: SpannerAssertOptions;
-  #provider: SpannerClientProvider | null = null;
-
-  constructor(options: SpannerAssertOptions = {}) {
-    this.#options = options;
-  }
-
-  async assert(expectedFile: string, options: AssertOptions = {}): Promise<void> {
-    const expectations = await loadExpectationsFromFile(expectedFile, {
-      baseDir: options.baseDir,
-    });
-    await this.#assertWithExpectations(expectations, options);
-  }
-
-  async assertExpectations(
+export type SpannerAssertInstance = {
+  assert(expectedFile: string, options?: AssertOptions): Promise<void>;
+  assertExpectations(
     expectations: ExpectationsFile,
-    options: AssertOptions = {},
-  ): Promise<void> {
-    await this.#assertWithExpectations(expectations, options);
-  }
+    options?: AssertOptions,
+  ): Promise<void>;
+  close(): Promise<void>;
+};
 
-  async close(): Promise<void> {
-    if (this.#provider) {
-      await this.#provider.close();
-      this.#provider = null;
-    }
-  }
+export function createSpannerAssert(
+  options: SpannerAssertOptions = {},
+): SpannerAssertInstance {
+  let providerRef: SpannerClientProvider | null = null;
 
-  protected async #assertWithExpectations(
-    expectations: ExpectationsFile,
-    options: AssertOptions,
-  ): Promise<void> {
-    const provider = this.#ensureProvider(options);
-    const isTemporaryProvider = provider !== this.#provider;
-
-    try {
-      await assertExpectations(provider.getDatabase(), expectations);
-    } finally {
-      if (isTemporaryProvider) {
-        await provider.close();
-      }
-    }
-  }
-
-  #ensureProvider(options: AssertOptions): SpannerClientProvider {
-    const connectionOverrides = options.connection ?? {};
+  const ensureProvider = (overrides: AssertOptions): [SpannerClientProvider, boolean] => {
+    const connectionOverrides = overrides.connection ?? {};
     const mergedConnection = {
-      ...this.#options.connection,
+      ...options.connection,
       ...connectionOverrides,
     };
     const resolved = resolveConnectionConfig(mergedConnection);
     const useTemporaryProvider = Object.keys(connectionOverrides).length > 0;
 
     if (useTemporaryProvider) {
-      return new SpannerClientProvider(resolved, this.#options.clientDependencies ?? {});
+      const temporaryProvider = createSpannerClientProvider(
+        resolved,
+        options.clientDependencies ?? {},
+      );
+      return [temporaryProvider, true];
     }
 
-    if (!this.#provider) {
-      this.#provider = new SpannerClientProvider(resolved, this.#options.clientDependencies ?? {});
+    if (!providerRef) {
+      providerRef = createSpannerClientProvider(resolved, options.clientDependencies ?? {});
     }
 
-    return this.#provider;
-  }
+    return [providerRef, false];
+  };
+
+  const assertWithExpectations = async (
+    expectations: ExpectationsFile,
+    overrides: AssertOptions,
+  ): Promise<void> => {
+    const [provider, shouldDispose] = ensureProvider(overrides);
+
+    try {
+      await assertExpectations(provider.getDatabase(), expectations);
+    } finally {
+      if (shouldDispose) {
+        await provider.close();
+      }
+    }
+  };
+
+  const assert = async (expectedFile: string, overrides: AssertOptions = {}): Promise<void> => {
+    const expectations = await loadExpectationsFromFile(expectedFile, {
+      baseDir: overrides.baseDir,
+    });
+    await assertWithExpectations(expectations, overrides);
+  };
+
+  const assertExpectationsPublic = async (
+    expectations: ExpectationsFile,
+    overrides: AssertOptions = {},
+  ): Promise<void> => {
+    await assertWithExpectations(expectations, overrides);
+  };
+
+  const close = async (): Promise<void> => {
+    if (providerRef) {
+      await providerRef.close();
+      providerRef = null;
+    }
+  };
+
+  return {
+    assert,
+    assertExpectations: assertExpectationsPublic,
+    close,
+  };
 }
 
-export const spannerAssert = new SpannerAssert();
+export const spannerAssert = createSpannerAssert();
 
 export { SpannerAssertionError } from './errors.js';
-export type {
-  ExpectationsFile,
-  SpannerConnectionConfig,
-} from './types.js';
-export type { AssertOptions, SpannerAssertOptions };
+export type { ExpectationsFile, SpannerConnectionConfig } from './types.js';
+export type { AssertOptions, SpannerAssertOptions, SpannerAssertInstance };

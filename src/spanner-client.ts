@@ -1,4 +1,4 @@
-import { Spanner, type ClientConfig, type Database } from '@google-cloud/spanner';
+import { type ClientConfig, type Database, Spanner } from '@google-cloud/spanner';
 
 import type { ResolvedSpannerConnectionConfig } from './types.js';
 
@@ -8,65 +8,64 @@ export type SpannerClientDependencies = {
   clientConfig?: ClientConfig;
 };
 
-export class SpannerClientProvider {
-  #config: ResolvedSpannerConnectionConfig;
-  #dependencies: SpannerClientDependencies;
-  #spanner: Spanner | null = null;
-  #database: Database | null = null;
+export type SpannerClientProvider = {
+  getDatabase(): Database;
+  close(): Promise<void>;
+};
 
-  constructor(
-    config: ResolvedSpannerConnectionConfig,
-    dependencies: SpannerClientDependencies = {},
-  ) {
-    this.#config = config;
-    this.#dependencies = dependencies;
-  }
+export function createSpannerClientProvider(
+  config: ResolvedSpannerConnectionConfig,
+  dependencies: SpannerClientDependencies = {},
+): SpannerClientProvider {
+  let spannerRef: Spanner | null = dependencies.spannerInstance ?? null;
+  let databaseRef: Database | null = dependencies.database ?? null;
 
-  getDatabase(): Database {
-    if (!this.#database) {
-      this.#database = this.#resolveDatabase();
+  const resolveSpanner = (): Spanner => {
+    if (dependencies.spannerInstance) {
+      return dependencies.spannerInstance;
     }
 
-    return this.#database;
-  }
-
-  async close(): Promise<void> {
-    if (this.#database) {
-      await this.#database.close();
-      this.#database = null;
-    }
-
-    if (this.#spanner) {
-      await this.#spanner.close();
-      this.#spanner = null;
-    }
-  }
-
-  #resolveDatabase(): Database {
-    if (this.#dependencies.database) {
-      return this.#dependencies.database;
-    }
-
-    const spanner = this.#resolveSpanner();
-    const instance = spanner.instance(this.#config.instanceId);
-    return instance.database(this.#config.databaseId);
-  }
-
-  #resolveSpanner(): Spanner {
-    if (this.#dependencies.spannerInstance) {
-      return this.#dependencies.spannerInstance;
-    }
-
-    if (!this.#spanner) {
+    if (!spannerRef) {
       const options: ClientConfig = {
-        projectId: this.#config.projectId,
-        ...(this.#config.emulatorHost ? { emulatorHost: this.#config.emulatorHost } : {}),
-        ...(this.#dependencies.clientConfig ?? {}),
+        projectId: config.projectId,
+        ...(config.emulatorHost ? { emulatorHost: config.emulatorHost } : {}),
+        ...(dependencies.clientConfig ?? {}),
       };
 
-      this.#spanner = new Spanner(options);
+      spannerRef = new Spanner(options);
     }
 
-    return this.#spanner;
-  }
+    return spannerRef;
+  };
+
+  const resolveDatabase = (): Database => {
+    if (dependencies.database) {
+      return dependencies.database;
+    }
+
+    if (!databaseRef) {
+      const spanner = resolveSpanner();
+      const instance = spanner.instance(config.instanceId);
+      databaseRef = instance.database(config.databaseId);
+    }
+
+    return databaseRef;
+  };
+
+  const close = async (): Promise<void> => {
+    if (databaseRef) {
+      await databaseRef.close();
+      databaseRef = null;
+    }
+
+    if (spannerRef && !dependencies.spannerInstance) {
+      await spannerRef.close();
+      spannerRef = null;
+    }
+  };
+
+  return {
+    getDatabase: resolveDatabase,
+    close,
+  };
 }

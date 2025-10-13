@@ -12,12 +12,12 @@
     }
   },
   "scripts": {
-    "build": "pnpm run clean && tsdown build",
+    "build": "pnpm run clean && tsdown --config tsdown.config.ts",
     "clean": "rm -rf dist",
-    "lint": "echo \"lintは未設定です\"",
+    "lint": "biome check .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:e2e": "node tests/e2e/run.mjs"
+    "test:e2e": "pnpm run build && tsx tests/e2e/run.ts"
   },
   "keywords": [
     "spanner",
@@ -31,9 +31,11 @@
     "dist"
   ],
   "devDependencies": {
+    "@biomejs/biome": "^2.2.6",
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^22.7.4",
     "tsdown": "^0.9.0",
+    "tsx": "^4.19.1",
     "typescript": "^5.6.3",
     "vitest": "^2.1.1"
   },
