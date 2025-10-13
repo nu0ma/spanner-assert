@@ -1,4 +1,4 @@
-import { SpannerClientDependencies } from "./spanner-client.ts";
+import type { SpannerClientDependencies } from "./spanner-client.js";
 
 export type ColumnValue = string | number | boolean | null;
 
@@ -38,5 +38,4 @@ export type SpannerAssertInstance = {
     expectations: ExpectationsFile,
     options?: AssertOptions,
   ): Promise<void>;
-  close(): Promise<void>;
 };

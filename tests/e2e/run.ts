@@ -262,7 +262,6 @@ async function main(): Promise<void> {
       }
     } finally {
       console.info("Closing client resources...");
-      await spannerAssert.close();
       await database.close();
       await spanner.close();
     }

@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { createSpannerAssert, SpannerAssertionError } from "../src/index.js";
+import { SpannerAssertionError } from "../src/index.js";
+import { createSpannerAssert } from "../src/spanner-assert.js";
 import type { ExpectationsFile } from "../src/types.js";
 
 type Row = { toJSON(): Record<string, unknown> };
@@ -35,7 +36,7 @@ function createInstance(runMocks: RunResult[]) {
     },
   });
 
-  return { instance, run, close };
+  return { instance, run };
 }
 
 describe("SpannerAssert", () => {
@@ -63,7 +64,6 @@ describe("SpannerAssert", () => {
       instance.assertExpectations(expectations),
     ).resolves.toBeUndefined();
     expect(run).toHaveBeenCalledTimes(2);
-    await instance.close();
   });
 
   it("allows matching records with null column expectations", async () => {
@@ -87,8 +87,6 @@ describe("SpannerAssert", () => {
     const [[query]] = run.mock.calls as unknown as [QueryRequest[]];
     expect(query.sql).toMatch(/`Description` IS NULL/);
     expect(query.params ?? {}).toEqual({});
-
-    await instance.close();
   });
 
   it("fails when row count differs", async () => {
@@ -106,7 +104,6 @@ describe("SpannerAssert", () => {
     await expect(
       instance.assertExpectations(expectations),
     ).rejects.toBeInstanceOf(SpannerAssertionError);
-    await instance.close();
   });
 
   it("fails when no rows match column expectations", async () => {
@@ -126,7 +123,6 @@ describe("SpannerAssert", () => {
     await expect(
       instance.assertExpectations(expectations),
     ).rejects.toBeInstanceOf(SpannerAssertionError);
-    await instance.close();
   });
 
   it("fails immediately when table name is invalid", async () => {
@@ -144,6 +140,5 @@ describe("SpannerAssert", () => {
     await expect(
       instance.assertExpectations(expectations),
     ).rejects.toBeInstanceOf(SpannerAssertionError);
-    await instance.close();
   });
 });

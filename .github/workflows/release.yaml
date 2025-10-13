@@ -1,0 +1,161 @@
+name: Release
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - closed
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to publish (e.g., 1.2.3)'
+        required: false
+        type: string
+
+jobs:
+  release:
+    if: |
+      (github.event_name == 'pull_request' && 
+       github.event.pull_request.merged == true &&
+       contains(github.event.pull_request.labels.*.name, 'Release')) ||
+      github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+      pull-requests: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+        with:
+          fetch-depth: 0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+        with:
+          version: 10.17.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version: 24
+          registry-url: 'https://registry.npmjs.org'
+          cache: 'pnpm'
+
+      - name: Get package info
+        id: package
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ github.event.inputs.version }}" ]; then
+            VERSION="${{ github.event.inputs.version }}"
+            # Validate version format
+            if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+              echo "❌ Invalid semver format: $VERSION"
+              echo "Expected format: X.Y.Z (e.g., 1.2.3)"
+              exit 1
+            fi
+          else
+            VERSION=$(node -p "require('./package.json').version")
+          fi
+          PACKAGE_NAME=$(node -p "require('./package.json').name")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "name=$PACKAGE_NAME" >> $GITHUB_OUTPUT
+
+      - name: Check if tag exists
+        id: tag-check
+        run: |
+          if git rev-parse "v${{ steps.package.outputs.version }}" >/dev/null 2>&1; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Install dependencies
+        if: steps.tag-check.outputs.exists == 'false'
+        run: pnpm install --frozen-lockfile
+
+      - name: Build package
+        if: steps.tag-check.outputs.exists == 'false'
+        run: pnpm run build
+
+      - name: Verify build output
+        if: steps.tag-check.outputs.exists == 'false'
+        run: |
+          if [ ! -f "dist/index.js" ]; then
+            echo "❌ Build failed - dist/index.js not found"
+            exit 1
+          fi
+          echo "✅ Build verification successful"
+
+      - name: Publish to npm with provenance
+        if: steps.tag-check.outputs.exists == 'false'
+        run: pnpm publish --provenance --access public --no-git-checks
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Create GitHub Release with tag
+        id: create-release
+        if: steps.tag-check.outputs.exists == 'false'
+        run: |
+          BRANCH="${{ github.event.pull_request.base.ref || github.ref_name }}"
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            RELEASE_URL=$(gh release create "v${{ steps.package.outputs.version }}" \
+              --title "v${{ steps.package.outputs.version }}" \
+              --target "${{ github.sha }}" \
+              --generate-notes)
+          else
+            # Save PR body to file safely using environment variable
+            printf '%s\n' "$PR_BODY" > release_notes.md
+            RELEASE_URL=$(gh release create "v${{ steps.package.outputs.version }}" \
+              --title "v${{ steps.package.outputs.version }}" \
+              --target "${{ github.sha }}" \
+              --notes-file release_notes.md)
+          fi
+          echo "url=$RELEASE_URL" >> $GITHUB_OUTPUT
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+
+      - name: Comment on PR - Success
+        if: |
+          always() && 
+          github.event_name == 'pull_request' && 
+          steps.tag-check.outputs.exists == 'false' &&
+          success()
+        run: |
+          gh pr comment ${{ github.event.pull_request.number }} \
+            --body "✅ **Release v${{ steps.package.outputs.version }} completed successfully!**
+
+          - 📦 npm package: https://www.npmjs.com/package/${{ steps.package.outputs.name }}/v/${{ steps.package.outputs.version }}
+          - 🏷️ GitHub Release: ${{ steps.create-release.outputs.url }}
+          - 🔗 Workflow run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Comment on PR - Tag Exists
+        if: |
+          always() && 
+          github.event_name == 'pull_request' && 
+          steps.tag-check.outputs.exists == 'true'
+        run: |
+          gh pr comment ${{ github.event.pull_request.number }} \
+            --body "⚠️ **Release skipped**: Tag v${{ steps.package.outputs.version }} already exists
+
+          Please check the existing release or update the version in package.json."
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Comment on PR - Failure
+        if: |
+          always() && 
+          github.event_name == 'pull_request' && 
+          steps.tag-check.outputs.exists == 'false' &&
+          failure()
+        run: |
+          gh pr comment ${{ github.event.pull_request.number }} \
+            --body "❌ **Release v${{ steps.package.outputs.version }} failed**
+
+          Please check the workflow logs for details.
+          🔗 Workflow run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+        env:
+          GH_TOKEN: ${{ github.token }}
