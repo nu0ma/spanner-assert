@@ -35,7 +35,7 @@ function createInstance(runMocks: RunResult[]) {
 }
 
 describe('SpannerAssert', () => {
-  it('期待値通りなら成功する', async () => {
+  it('succeeds when expectations are met', async () => {
     const expectations: ExpectationsFile = {
       tables: {
         Samples: {
@@ -60,7 +60,7 @@ describe('SpannerAssert', () => {
     await instance.close();
   });
 
-  it('件数が一致しなければ失敗する', async () => {
+  it('fails when row count differs', async () => {
     const expectations: ExpectationsFile = {
       tables: {
         Samples: {
@@ -78,7 +78,7 @@ describe('SpannerAssert', () => {
     await instance.close();
   });
 
-  it('列条件に合致するレコードが無ければ失敗する', async () => {
+  it('fails when no rows match column expectations', async () => {
     const expectations: ExpectationsFile = {
       tables: {
         Samples: {
@@ -98,7 +98,7 @@ describe('SpannerAssert', () => {
     await instance.close();
   });
 
-  it('不正なテーブル名は即座に失敗する', async () => {
+  it('fails immediately when table name is invalid', async () => {
     const expectations: ExpectationsFile = {
       tables: {
         'invalid-table': {

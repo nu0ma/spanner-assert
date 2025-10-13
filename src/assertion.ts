@@ -24,7 +24,7 @@ async function assertTable(
   if (typeof expectation.count === 'number') {
     const actualCount = await fetchCount(database, quotedTableName);
     if (actualCount !== expectation.count) {
-      throw new SpannerAssertionError(`${tableName}の件数が一致しません。`, {
+      throw new SpannerAssertionError(`Row count mismatch detected for ${tableName}.`, {
         expected: expectation.count,
         actual: actualCount,
         table: tableName,
@@ -35,7 +35,7 @@ async function assertTable(
   if (expectation.columns) {
     const matchedCount = await fetchMatchCount(database, quotedTableName, expectation.columns);
     if (matchedCount === 0) {
-      throw new SpannerAssertionError(`${tableName}で条件に一致するレコードが見つかりません。`, {
+      throw new SpannerAssertionError(`No rows matched the expected column values in ${tableName}.`, {
         table: tableName,
         columns: expectation.columns,
       });
@@ -100,14 +100,14 @@ function normalizeNumericValue(value: unknown): number {
     }
   }
 
-  throw new SpannerAssertionError('数値項目を数値に変換できませんでした。', {
+  throw new SpannerAssertionError('Failed to convert value to a numeric type.', {
     value,
   });
 }
 
 function quoteIdentifier(identifier: string): string {
   if (!IDENTIFIER_PATTERN.test(identifier)) {
-    throw new SpannerAssertionError('識別子に許可されていない文字が含まれています。', {
+    throw new SpannerAssertionError('Identifier contains unsupported characters.', {
       identifier,
     });
   }

@@ -1,7 +1,7 @@
 {
   "name": "spanner-assert",
   "version": "0.1.0",
-  "description": "SpannerレコードをYAML期待値で検証するためのライブラリ",
+  "description": "Library for validating Cloud Spanner records against YAML expectations",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -14,7 +14,7 @@
   "scripts": {
     "build": "pnpm run clean && tsdown --config tsdown.config.ts",
     "clean": "rm -rf dist",
-    "lint": "biome check .",
+    "lint": "eslint . --ext .ts,.tsx",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:e2e": "pnpm run build && tsx tests/e2e/run.ts"
@@ -31,9 +31,15 @@
     "dist"
   ],
   "devDependencies": {
-    "@biomejs/biome": "^2.2.6",
+    "@eslint/js": "^9.13.0",
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^22.7.4",
+    "@typescript-eslint/eslint-plugin": "^8.11.0",
+    "@typescript-eslint/parser": "^8.11.0",
+    "eslint-import-resolver-typescript": "^3.6.1",
+    "eslint": "^9.13.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-import": "^2.30.0",
     "tsdown": "^0.9.0",
     "tsx": "^4.19.1",
     "typescript": "^5.6.3",

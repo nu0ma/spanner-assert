@@ -1,12 +1,13 @@
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
+
 import yaml from 'js-yaml';
 
 import type { ExpectationsFile, TableExpectation } from './types.js';
 
 export class InvalidExpectationFileError extends Error {
   constructor(message: string) {
-    super(`期待値ファイルの形式が正しくありません: ${message}`);
+    super(`Expectation file format is invalid: ${message}`);
     this.name = 'InvalidExpectationFileError';
   }
 }
@@ -26,40 +27,40 @@ export async function loadExpectationsFromFile(
   const parsed = yaml.load(raw);
 
   if (!parsed || typeof parsed !== 'object') {
-    throw new InvalidExpectationFileError('ルートがオブジェクトではありません。');
+    throw new InvalidExpectationFileError('Root value must be an object.');
   }
 
   if (!('tables' in parsed)) {
-    throw new InvalidExpectationFileError('tablesセクションが見つかりません。');
+    throw new InvalidExpectationFileError('Missing tables section.');
   }
 
   const tables = (parsed as { tables: unknown }).tables;
 
   if (!tables || typeof tables !== 'object') {
-    throw new InvalidExpectationFileError('tablesがオブジェクトではありません。');
+    throw new InvalidExpectationFileError('tables must be an object.');
   }
 
   const normalizedTables: Record<string, TableExpectation> = {};
 
   for (const [tableName, expectation] of Object.entries(tables as Record<string, unknown>)) {
     if (!expectation || typeof expectation !== 'object') {
-      throw new InvalidExpectationFileError(`${tableName}の定義がオブジェクトではありません。`);
+      throw new InvalidExpectationFileError(`${tableName} definition must be an object.`);
     }
 
     const { count, columns, ...rest } = expectation as TableExpectation & Record<string, unknown>;
 
     if (count !== undefined && typeof count !== 'number') {
-      throw new InvalidExpectationFileError(`${tableName}.countは数値である必要があります。`);
+      throw new InvalidExpectationFileError(`${tableName}.count must be numeric.`);
     }
 
     if (columns !== undefined && (typeof columns !== 'object' || Array.isArray(columns))) {
-      throw new InvalidExpectationFileError(`${tableName}.columnsはオブジェクトである必要があります。`);
+      throw new InvalidExpectationFileError(`${tableName}.columns must be an object.`);
     }
 
     const unexpectedKeys = Object.keys(rest);
     if (unexpectedKeys.length > 0) {
       throw new InvalidExpectationFileError(
-        `${tableName}に未対応のキー(${unexpectedKeys.join(', ')})があります。`,
+        `${tableName} contains unsupported keys: ${unexpectedKeys.join(', ')}`,
       );
     }
 

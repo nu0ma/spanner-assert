@@ -10,7 +10,7 @@ const ENV_EMULATOR_HOST = 'SPANNER_EMULATOR_HOST';
 
 export class MissingConfigurationError extends Error {
   constructor(field: string) {
-    super(`Spanner接続設定の${field}が指定されていません。`);
+    super(`Spanner connection setting ${field} is not provided.`);
     this.name = 'MissingConfigurationError';
   }
 }
@@ -18,7 +18,7 @@ export class MissingConfigurationError extends Error {
 export type ResolveConfigOptions = Partial<SpannerConnectionConfig>;
 
 /**
- * 環境変数と引数からSpannerの接続設定を解決する。
+ * Resolve Cloud Spanner connection settings from environment variables and overrides.
  */
 export function resolveConnectionConfig(
   overrides: ResolveConfigOptions = {},
