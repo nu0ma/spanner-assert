@@ -1,8 +1,5 @@
 # spanner-assert
 
-[![Tests](https://github.com/nu0ma/spanner-assert/actions/workflows/test.yml/badge.svg)](https://github.com/nu0ma/spanner-assert/actions/workflows/test.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-
 Validate Google Cloud Spanner data (emulator supported) against expectations written in YAML. Lightweight Node.js library, fast feedback loops.
 
 ## Install
@@ -13,9 +10,9 @@ pnpm add spanner-assert
 
 ## Quick Start
 
-1) Start the Spanner emulator (optional) and set connection environment variables such as `SPANNER_ASSERT_PROJECT_ID`, `SPANNER_ASSERT_INSTANCE_ID`, `SPANNER_ASSERT_DATABASE_ID`, `SPANNER_EMULATOR_HOST`.
+1. Start the Spanner emulator (optional) and set connection environment variables such as `SPANNER_ASSERT_PROJECT_ID`, `SPANNER_ASSERT_INSTANCE_ID`, `SPANNER_ASSERT_DATABASE_ID`, `SPANNER_EMULATOR_HOST`.
 
-2) Create an expectations YAML file:
+2. Create an expectations YAML file:
 
 ```yaml
 # expectations.yaml
@@ -44,12 +41,12 @@ tables:
       JSONData: '{"genre":"Fiction","rating":4.5}'
 ```
 
-3) Run the assertion from a script:
+3. Run the assertion from a script:
 
 ```ts
-import { spannerAssert } from 'spanner-assert';
+import { spannerAssert } from "spanner-assert";
 
-await spannerAssert.assert('./expectations.yaml');
+await spannerAssert.assert("./expectations.yaml");
 ```
 
 On success you get no output (or your own logging) because all tables matched.
