@@ -9,11 +9,7 @@
     "strict": true,
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
-    "outDir": "dist",
-    "declaration": true,
-    "declarationMap": true,
-    "sourceMap": true,
-    "rootDir": "src",
+    "noEmit": true,
     "resolveJsonModule": true
   },
   "include": ["src", "tests"]
