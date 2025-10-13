@@ -1,6 +1,10 @@
-import { type Database, type SpannerOptions, Spanner } from '@google-cloud/spanner';
+import {
+  type Database,
+  type SpannerOptions,
+  Spanner,
+} from "@google-cloud/spanner";
 
-import type { ResolvedSpannerConnectionConfig } from './types.js';
+import type { ResolvedSpannerConnectionConfig } from "./types.js";
 
 export type SpannerClientDependencies = {
   spannerInstance?: Spanner;

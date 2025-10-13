@@ -1,3 +1,5 @@
+import { SpannerClientDependencies } from "./spanner-client.ts";
+
 export type ColumnValue = string | number | boolean | null;
 
 export type TableColumnExpectations = Record<string, ColumnValue>;
@@ -19,3 +21,22 @@ export type SpannerConnectionConfig = {
 };
 
 export type ResolvedSpannerConnectionConfig = SpannerConnectionConfig;
+
+export type SpannerAssertOptions = {
+  connection?: Partial<SpannerConnectionConfig>;
+  clientDependencies?: SpannerClientDependencies;
+};
+
+export type AssertOptions = {
+  connection?: Partial<SpannerConnectionConfig>;
+  baseDir?: string;
+};
+
+export type SpannerAssertInstance = {
+  assert(expectedFile: string, options?: AssertOptions): Promise<void>;
+  assertExpectations(
+    expectations: ExpectationsFile,
+    options?: AssertOptions,
+  ): Promise<void>;
+  close(): Promise<void>;
+};

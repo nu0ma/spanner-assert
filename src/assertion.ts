@@ -1,12 +1,12 @@
-import type { Database } from '@google-cloud/spanner';
+import type { Database } from "@google-cloud/spanner";
 
-import { SpannerAssertionError } from './errors.js';
+import { SpannerAssertionError } from "./errors.js";
 import type {
   ColumnValue,
   ExpectationsFile,
   TableColumnExpectations,
   TableExpectation,
-} from './types.js';
+} from "./types.js";
 
 const IDENTIFIER_PATTERN = /^[A-Za-z][A-Za-z0-9_]*$/;
 
@@ -31,24 +31,34 @@ async function assertTable(
 ): Promise<void> {
   const quotedTableName = quoteIdentifier(tableName);
 
-  if (typeof expectation.count === 'number') {
+  if (typeof expectation.count === "number") {
     const actualCount = await fetchCount(database, quotedTableName);
     if (actualCount !== expectation.count) {
-      throw new SpannerAssertionError(`Row count mismatch detected for ${tableName}.`, {
-        expected: expectation.count,
-        actual: actualCount,
-        table: tableName,
-      });
+      throw new SpannerAssertionError(
+        `Row count mismatch detected for ${tableName}.`,
+        {
+          expected: expectation.count,
+          actual: actualCount,
+          table: tableName,
+        },
+      );
     }
   }
 
   if (expectation.columns) {
-    const matchedCount = await fetchCount(database, quotedTableName, expectation.columns);
+    const matchedCount = await fetchCount(
+      database,
+      quotedTableName,
+      expectation.columns,
+    );
     if (matchedCount === 0) {
-      throw new SpannerAssertionError(`No rows matched the expected column values in ${tableName}.`, {
-        table: tableName,
-        columns: expectation.columns,
-      });
+      throw new SpannerAssertionError(
+        `No rows matched the expected column values in ${tableName}.`,
+        {
+          table: tableName,
+          columns: expectation.columns,
+        },
+      );
     }
   }
 }
@@ -77,31 +87,37 @@ async function fetchCount(
 }
 
 function normalizeNumericValue(value: unknown): number {
-  if (typeof value === 'number') {
+  if (typeof value === "number") {
     return value;
   }
 
-  if (typeof value === 'bigint') {
+  if (typeof value === "bigint") {
     return Number(value);
   }
 
-  if (typeof value === 'string') {
+  if (typeof value === "string") {
     const parsed = Number(value);
     if (!Number.isNaN(parsed)) {
       return parsed;
     }
   }
 
-  throw new SpannerAssertionError('Failed to convert value to a numeric type.', {
-    value,
-  });
+  throw new SpannerAssertionError(
+    "Failed to convert value to a numeric type.",
+    {
+      value,
+    },
+  );
 }
 
 function quoteIdentifier(identifier: string): string {
   if (!IDENTIFIER_PATTERN.test(identifier)) {
-    throw new SpannerAssertionError('Identifier contains unsupported characters.', {
-      identifier,
-    });
+    throw new SpannerAssertionError(
+      "Identifier contains unsupported characters.",
+      {
+        identifier,
+      },
+    );
   }
 
   return `\`${identifier}\``;
@@ -112,7 +128,7 @@ function buildWhereClause(conditions?: TableColumnExpectations): {
   params: Record<string, ColumnValue>;
 } {
   if (!conditions || Object.keys(conditions).length === 0) {
-    return { whereClause: '', params: {} };
+    return { whereClause: "", params: {} };
   }
 
   const clauses: string[] = [];
@@ -130,6 +146,7 @@ function buildWhereClause(conditions?: TableColumnExpectations): {
     params[paramName] = value;
   }
 
-  const whereClause = clauses.length > 0 ? ` WHERE ${clauses.join(' AND ')}` : '';
+  const whereClause =
+    clauses.length > 0 ? ` WHERE ${clauses.join(" AND ")}` : "";
   return { whereClause, params };
 }

@@ -21,3 +21,4 @@ tables:
       Title: Example Book
       Author: Jane Doe
       PublishedYear: 2024
+      JSONData: '{"genre":"fiction","pages":320}'

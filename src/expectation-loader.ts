@@ -1,14 +1,18 @@
-import { readFile } from 'node:fs/promises';
-import path from 'node:path';
+import { readFile } from "node:fs/promises";
+import path from "node:path";
 
-import yaml from 'js-yaml';
+import yaml from "js-yaml";
 
-import type { ColumnValue, ExpectationsFile, TableExpectation } from './types.js';
+import type {
+  ColumnValue,
+  ExpectationsFile,
+  TableExpectation,
+} from "./types.js";
 
 export class InvalidExpectationFileError extends Error {
   constructor(message: string) {
     super(`Expectation file format is invalid: ${message}`);
-    this.name = 'InvalidExpectationFileError';
+    this.name = "InvalidExpectationFileError";
   }
 }
 
@@ -23,38 +27,50 @@ export async function loadExpectationsFromFile(
   const normalizedPath = path.isAbsolute(expectedPath)
     ? expectedPath
     : path.join(options.baseDir ?? process.cwd(), expectedPath);
-  const raw = await readFile(normalizedPath, 'utf8');
+  const raw = await readFile(normalizedPath, "utf8");
   const parsed = yaml.load(raw);
 
-  if (!parsed || typeof parsed !== 'object') {
-    throw new InvalidExpectationFileError('Root value must be an object.');
+  if (!parsed || typeof parsed !== "object") {
+    throw new InvalidExpectationFileError("Root value must be an object.");
   }
 
-  if (!('tables' in parsed)) {
-    throw new InvalidExpectationFileError('Missing tables section.');
+  if (!("tables" in parsed)) {
+    throw new InvalidExpectationFileError("Missing tables section.");
   }
 
   const tables = (parsed as { tables: unknown }).tables;
 
-  if (!tables || typeof tables !== 'object') {
-    throw new InvalidExpectationFileError('tables must be an object.');
+  if (!tables || typeof tables !== "object") {
+    throw new InvalidExpectationFileError("tables must be an object.");
   }
 
   const normalizedTables: Record<string, TableExpectation> = {};
 
-  for (const [tableName, expectation] of Object.entries(tables as Record<string, unknown>)) {
-    if (!expectation || typeof expectation !== 'object') {
-      throw new InvalidExpectationFileError(`${tableName} definition must be an object.`);
+  for (const [tableName, expectation] of Object.entries(
+    tables as Record<string, unknown>,
+  )) {
+    if (!expectation || typeof expectation !== "object") {
+      throw new InvalidExpectationFileError(
+        `${tableName} definition must be an object.`,
+      );
     }
 
-    const { count, columns, ...rest } = expectation as TableExpectation & Record<string, unknown>;
+    const { count, columns, ...rest } = expectation as TableExpectation &
+      Record<string, unknown>;
 
-    if (count !== undefined && typeof count !== 'number') {
-      throw new InvalidExpectationFileError(`${tableName}.count must be numeric.`);
+    if (count !== undefined && typeof count !== "number") {
+      throw new InvalidExpectationFileError(
+        `${tableName}.count must be numeric.`,
+      );
     }
 
-    if (columns !== undefined && (typeof columns !== 'object' || Array.isArray(columns))) {
-      throw new InvalidExpectationFileError(`${tableName}.columns must be an object.`);
+    if (
+      columns !== undefined &&
+      (typeof columns !== "object" || Array.isArray(columns))
+    ) {
+      throw new InvalidExpectationFileError(
+        `${tableName}.columns must be an object.`,
+      );
     }
 
     if (columns) {
@@ -64,7 +80,7 @@ export async function loadExpectationsFromFile(
     const unexpectedKeys = Object.keys(rest);
     if (unexpectedKeys.length > 0) {
       throw new InvalidExpectationFileError(
-        `${tableName} contains unsupported keys: ${unexpectedKeys.join(', ')}`,
+        `${tableName} contains unsupported keys: ${unexpectedKeys.join(", ")}`,
       );
     }
 
@@ -79,10 +95,13 @@ export async function loadExpectationsFromFile(
   };
 }
 
-function validateColumnValues(tableName: string, columns: Record<string, unknown>): void {
+function validateColumnValues(
+  tableName: string,
+  columns: Record<string, unknown>,
+): void {
   for (const [columnName, value] of Object.entries(columns)) {
     if (!isSupportedColumnValue(value)) {
-      const actualType = value === null ? 'null' : typeof value;
+      const actualType = value === null ? "null" : typeof value;
       throw new InvalidExpectationFileError(
         `${tableName}.columns.${columnName} must be a string, number, boolean, or null (received ${actualType}).`,
       );
@@ -93,8 +112,8 @@ function validateColumnValues(tableName: string, columns: Record<string, unknown
 function isSupportedColumnValue(value: unknown): value is ColumnValue {
   return (
     value === null ||
-    typeof value === 'string' ||
-    typeof value === 'number' ||
-    typeof value === 'boolean'
+    typeof value === "string" ||
+    typeof value === "number" ||
+    typeof value === "boolean"
   );
 }

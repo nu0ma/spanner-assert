@@ -3,7 +3,7 @@ export class SpannerAssertionError extends Error {
 
   constructor(message: string, details?: Record<string, unknown>) {
     super(message);
-    this.name = 'SpannerAssertionError';
+    this.name = "SpannerAssertionError";
     this.details = details;
   }
 }

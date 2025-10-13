@@ -1,34 +1,22 @@
-import { assertExpectations } from './assertion.js';
-import { resolveConnectionConfig } from './config.js';
-import { loadExpectationsFromFile } from './expectation-loader.js';
-import { openDatabase, type DatabaseHandle, type SpannerClientDependencies } from './spanner-client.js';
-import type { ExpectationsFile, SpannerConnectionConfig } from './types.js';
-
-type SpannerAssertOptions = {
-  connection?: Partial<SpannerConnectionConfig>;
-  clientDependencies?: SpannerClientDependencies;
-};
-
-type AssertOptions = {
-  connection?: Partial<SpannerConnectionConfig>;
-  baseDir?: string;
-};
-
-type SpannerAssertInstance = {
-  assert(expectedFile: string, options?: AssertOptions): Promise<void>;
-  assertExpectations(
-    expectations: ExpectationsFile,
-    options?: AssertOptions,
-  ): Promise<void>;
-  close(): Promise<void>;
-};
+import { assertExpectations } from "./assertion.js";
+import { resolveConnectionConfig } from "./config.js";
+import { loadExpectationsFromFile } from "./expectation-loader.js";
+import { openDatabase, type DatabaseHandle } from "./spanner-client.js";
+import type {
+  ExpectationsFile,
+  SpannerAssertOptions,
+  SpannerAssertInstance,
+  AssertOptions,
+} from "./types.js";
 
 export function createSpannerAssert(
   options: SpannerAssertOptions = {},
 ): SpannerAssertInstance {
   let cachedHandle: DatabaseHandle | null = null;
 
-  const ensureHandle = (overrides: AssertOptions): [DatabaseHandle, boolean] => {
+  const ensureHandle = (
+    overrides: AssertOptions,
+  ): [DatabaseHandle, boolean] => {
     const connectionOverrides = overrides.connection ?? {};
     const mergedConnection = {
       ...options.connection,
@@ -38,7 +26,10 @@ export function createSpannerAssert(
     const expectsTemporaryHandle = Object.keys(connectionOverrides).length > 0;
 
     if (expectsTemporaryHandle) {
-      const temporaryHandle = openDatabase(resolved, options.clientDependencies ?? {});
+      const temporaryHandle = openDatabase(
+        resolved,
+        options.clientDependencies ?? {},
+      );
       return [temporaryHandle, true];
     }
 
@@ -64,7 +55,10 @@ export function createSpannerAssert(
     }
   };
 
-  const assert = async (expectedFile: string, overrides: AssertOptions = {}): Promise<void> => {
+  const assert = async (
+    expectedFile: string,
+    overrides: AssertOptions = {},
+  ): Promise<void> => {
     const expectations = await loadExpectationsFromFile(expectedFile, {
       baseDir: overrides.baseDir,
     });
@@ -94,4 +88,4 @@ export function createSpannerAssert(
 
 export const spannerAssert = createSpannerAssert();
 
-export { SpannerAssertionError } from './errors.js';
+export { SpannerAssertionError } from "./errors.js";

@@ -2,3 +2,4 @@ onlyBuiltDependencies:
   - esbuild
   - protobufjs
   - rolldown
+  - unrs-resolver
