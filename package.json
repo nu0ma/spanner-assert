@@ -14,8 +14,10 @@
   "scripts": {
     "build": "pnpm run clean && tsdown build",
     "clean": "rm -rf dist",
+    "lint": "echo \"lintは未設定です\"",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:e2e": "node tests/e2e/run.mjs"
   },
   "keywords": [
     "spanner",

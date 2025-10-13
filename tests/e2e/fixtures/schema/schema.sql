@@ -1,0 +1,4 @@
+CREATE TABLE Samples (
+  Id STRING(64) NOT NULL,
+  Name STRING(256)
+) PRIMARY KEY (Id);
