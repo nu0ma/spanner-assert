@@ -70,6 +70,104 @@ SpannerAssertionError: No rows matched the expected column values in Books.
 
 An error is thrown detailing which table and columns failed to match.
 
+## Usage with Playwright
+
+Here's a practical example of using `spanner-assert` in Playwright E2E tests to validate database state after user interactions:
+
+```ts
+import { test, expect } from '@playwright/test';
+import { createSpannerAssert } from 'spanner-assert';
+
+test.describe('User Registration Flow', () => {
+  let spannerAssert;
+
+  test.beforeAll(async () => {
+    // Initialize spanner-assert once for all tests
+    spannerAssert = createSpannerAssert({
+      connection: {
+        projectId: 'test-project',
+        instanceId: 'test-instance',
+        databaseId: 'test-database',
+        emulatorHost: '127.0.0.1:9010',
+      },
+    });
+  });
+
+  test('should create user record after registration', async ({ page }) => {
+    // 1. Perform UI actions
+    await page.goto('https://your-app.com/register');
+    await page.fill('[name="email"]', 'alice@example.com');
+    await page.fill('[name="name"]', 'Alice Example');
+    await page.click('button[type="submit"]');
+
+    await expect(page.locator('.success-message')).toBeVisible();
+
+    // 2. Validate database state with spanner-assert
+    await spannerAssert.assert('./test/expectations/user-created.yaml');
+  });
+
+  test('should update user profile', async ({ page }) => {
+    // Navigate and update profile
+    await page.goto('https://your-app.com/profile');
+    await page.fill('[name="bio"]', 'Software engineer');
+    await page.click('button:has-text("Save")');
+
+    await expect(page.locator('.success-notification')).toBeVisible();
+
+    // Verify database was updated correctly
+    await spannerAssert.assert('./test/expectations/profile-updated.yaml');
+  });
+
+  test('should create product and verify inventory', async ({ page }) => {
+    // Admin creates a new product
+    await page.goto('https://your-app.com/admin/products');
+    await page.fill('[name="productName"]', 'Example Product');
+    await page.fill('[name="price"]', '1999');
+    await page.check('[name="isActive"]');
+    await page.click('button:has-text("Create Product")');
+
+    await expect(page.locator('.product-created')).toBeVisible();
+
+    // Validate both Products and Inventory tables
+    await spannerAssert.assert('./test/expectations/product-inventory.yaml');
+  });
+});
+```
+
+**Example expectation file** (`test/expectations/user-created.yaml`):
+
+```yaml
+tables:
+  Users:
+    count: 1
+    columns:
+      Email: "alice@example.com"
+      Name: "Alice Example"
+      Status: 1
+```
+
+**Example with multiple tables** (`test/expectations/product-inventory.yaml`):
+
+```yaml
+tables:
+  Products:
+    columns:
+      Name: "Example Product"
+      Price: 1999
+      IsActive: true
+  Inventory:
+    columns:
+      ProductID: "product-001"
+      Quantity: 0
+      LastUpdated: "2024-01-01T00:00:00Z"
+```
+
+This pattern allows you to:
+- Verify UI actions resulted in correct database changes
+- Validate complex multi-table relationships
+- Catch data integrity issues early in the development cycle
+- Keep test expectations readable and version-controlled
+
 ## License
 
 MIT
