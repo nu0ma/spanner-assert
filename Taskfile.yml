@@ -89,3 +89,15 @@ tasks:
         trap 'task emulator:down >/dev/null 2>&1 || true' EXIT
         task emulator:setup
         pnpm run test:e2e
+
+  test:playwright:
+    desc: Run Playwright tests against the Spanner emulator
+    deps:
+      - build
+    cmds:
+      - |
+        set -euo pipefail
+        task emulator:up
+        trap 'task emulator:down >/dev/null 2>&1 || true' EXIT
+        task emulator:setup
+        pnpm exec playwright test
