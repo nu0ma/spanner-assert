@@ -4,6 +4,7 @@ import { loadExpectationsFromFile } from "./expectation-loader.ts";
 import { openDatabase } from "./spanner-client.ts";
 import type {
   ExpectationsFile,
+  ResolvedSpannerConnectionConfig,
   SpannerAssertOptions,
   SpannerAssertInstance,
 } from "./types.ts";
@@ -39,8 +40,13 @@ export function createSpannerAssert(
     await assertWithExpectations(expectations);
   };
 
+  const getConnectionInfo = (): ResolvedSpannerConnectionConfig => ({
+    ...resolvedConfig,
+  });
+
   return {
     assert,
     assertExpectations: assertExpectationsPublic,
+    getConnectionInfo,
   };
 }
