@@ -6,33 +6,16 @@ import {
 
 import type { ResolvedSpannerConnectionConfig } from "./types.ts";
 
-export type SpannerClientDependencies = {
-  spannerInstance?: Spanner;
-  database?: Database;
-  clientConfig?: SpannerOptions;
-};
-
 export type DatabaseHandle = {
   database: Database;
   close(): Promise<void>;
 };
 
 export function openDatabase(
-  config: ResolvedSpannerConnectionConfig,
-  dependencies: SpannerClientDependencies = {}
+  config: ResolvedSpannerConnectionConfig
 ): DatabaseHandle {
-  if (dependencies.database) {
-    return {
-      database: dependencies.database,
-      async close() {
-        // Provided database is owned by the caller; nothing to do.
-      },
-    };
-  }
-
   const clientConfig: SpannerOptions = {
     projectId: config.projectId,
-    ...(dependencies.clientConfig ?? {}),
   };
 
   // Add emulator host configuration if provided
@@ -44,7 +27,7 @@ export function openDatabase(
     clientConfig.sslCreds = undefined;
   }
 
-  const spanner = dependencies.spannerInstance ?? new Spanner(clientConfig);
+  const spanner = new Spanner(clientConfig);
 
   const instance = spanner.instance(config.instanceId);
   const database = instance.database(config.databaseId);
@@ -53,9 +36,7 @@ export function openDatabase(
     database,
     async close(): Promise<void> {
       await database.close();
-      if (!dependencies.spannerInstance) {
-        await spanner.close();
-      }
+      spanner.close();
     },
   };
 }

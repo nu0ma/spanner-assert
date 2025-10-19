@@ -13,9 +13,8 @@ export function createSpannerAssert(
   options: SpannerAssertOptions
 ): SpannerAssertInstance {
   const resolvedConfig = resolveConnectionConfig(options.connection);
-  const dependencies = options.clientDependencies ?? {};
 
-  const openHandle = () => openDatabase(resolvedConfig, dependencies);
+  const openHandle = () => openDatabase(resolvedConfig);
 
   const assertWithExpectations = async (
     expectations: ExpectationsFile

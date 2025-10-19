@@ -103,9 +103,6 @@ async function main(): Promise<void> {
       databaseId,
       emulatorHost,
     },
-    clientDependencies: {
-      database,
-    },
   });
 
   try {
