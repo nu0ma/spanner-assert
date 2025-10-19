@@ -72,69 +72,60 @@ An error is thrown detailing which table and columns failed to match.
 
 ## Usage with Playwright
 
-Here's a practical example of using `spanner-assert` in Playwright E2E tests to validate database state after user interactions:
+This repository ships with a runnable Playwright scenario (`tests/playwright/spanner-assert.spec.ts`) that validates the state of a Docker-hosted Spanner emulator without touching any UI.
+
+### Run the demo
+
+```bash
+# 1. Build the library (Task targets do this automatically)
+pnpm run build
+
+# 2. Spin up the emulator and apply the schema
+task emulator:up
+task emulator:setup
+
+# 3. Execute the Playwright test suite
+pnpm exec playwright test
+
+# Or run everything (including lifecycle) with a single Task target:
+task test:playwright
+
+# (初回のみ) Playwright のブラウザバイナリを取得する場合
+pnpm exec playwright install --with-deps
+```
+
+The Playwright test seeds sample data through the Spanner client and then verifies tables with `spanner-assert`:
 
 ```ts
-import { test, expect } from '@playwright/test';
-import { createSpannerAssert } from 'spanner-assert';
+import { test } from "@playwright/test";
+import {
+  closeSpannerContext,
+  createSpannerTestContext,
+  expectationsFixturePath,
+  seedSamples,
+} from "../e2e/helpers/spanner.ts";
 
-test.describe('User Registration Flow', () => {
-  let spannerAssert;
+let context;
 
+test.describe("spanner-assert with Playwright", () => {
   test.beforeAll(async () => {
-    // Initialize spanner-assert once for all tests
-    spannerAssert = createSpannerAssert({
-      connection: {
-        projectId: 'test-project',
-        instanceId: 'test-instance',
-        databaseId: 'test-database',
-        emulatorHost: '127.0.0.1:9010',
-      },
-    });
+    context = createSpannerTestContext();
+    await seedSamples(context.database);
   });
 
-  test('should create user record after registration', async ({ page }) => {
-    // 1. Perform UI actions
-    await page.goto('https://your-app.com/register');
-    await page.fill('[name="email"]', 'alice@example.com');
-    await page.fill('[name="name"]', 'Alice Example');
-    await page.click('button[type="submit"]');
-
-    await expect(page.locator('.success-message')).toBeVisible();
-
-    // 2. Validate database state with spanner-assert
-    await spannerAssert.assert('./test/expectations/user-created.yaml');
+  test.afterAll(async () => {
+    if (context) {
+      await closeSpannerContext(context);
+    }
   });
 
-  test('should update user profile', async ({ page }) => {
-    // Navigate and update profile
-    await page.goto('https://your-app.com/profile');
-    await page.fill('[name="bio"]', 'Software engineer');
-    await page.click('button:has-text("Save")');
-
-    await expect(page.locator('.success-notification')).toBeVisible();
-
-    // Verify database was updated correctly
-    await spannerAssert.assert('./test/expectations/profile-updated.yaml');
-  });
-
-  test('should create product and verify inventory', async ({ page }) => {
-    // Admin creates a new product
-    await page.goto('https://your-app.com/admin/products');
-    await page.fill('[name="productName"]', 'Example Product');
-    await page.fill('[name="price"]', '1999');
-    await page.check('[name="isActive"]');
-    await page.click('button:has-text("Create Product")');
-
-    await expect(page.locator('.product-created')).toBeVisible();
-
-    // Validate both Products and Inventory tables
-    await spannerAssert.assert('./test/expectations/product-inventory.yaml');
+  test("seeds are present in the emulator", async () => {
+    await context.spannerAssert.assert(expectationsFixturePath("samples.yaml"));
   });
 });
 ```
 
-**Example expectation file** (`test/expectations/user-created.yaml`):
+**Expectation fixture** (`tests/e2e/fixtures/expectations/samples.yaml`):
 
 ```yaml
 tables:

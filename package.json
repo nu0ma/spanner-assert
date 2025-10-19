@@ -36,6 +36,7 @@
     "prettier:fix": "prettier --write 'src/**/*.{js,jsx,ts,tsx}'",
     "test": "vitest run",
     "test:e2e": "pnpm run build && tsx tests/e2e/run.ts",
+    "test:e2e:playwright": "pnpm run build && pnpm exec playwright test",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -49,6 +50,7 @@
     "@types/node": "^22.7.4",
     "@typescript-eslint/eslint-plugin": "^8.11.0",
     "@typescript-eslint/parser": "^8.11.0",
+    "@playwright/test": "^1.48.2",
     "eslint": "^9.13.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-import-resolver-typescript": "^3.6.1",
