@@ -45,3 +45,6 @@ jobs:
 
       - name: Run emulator e2e tests
         run: task test:emulator
+      
+      - name: Run playwright tests
+        run: task test:playwright
