@@ -30,4 +30,5 @@ export type SpannerAssertOptions = {
 export type SpannerAssertInstance = {
   assert(expectedFile: string): Promise<void>;
   assertExpectations(expectations: ExpectationsFile): Promise<void>;
+  getConnectionInfo(): ResolvedSpannerConnectionConfig;
 };

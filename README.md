@@ -55,6 +55,8 @@ const spannerAssert = createSpannerAssert({
   },
 });
 
+console.log(spannerAssert.getConnectionInfo()); // -> resolved connection settings
+
 await spannerAssert.assert("./expectations.yaml");
 ```
 
