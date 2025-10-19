@@ -41,6 +41,10 @@ tables:
       JSONData: '{"genre":"Fiction","rating":4.5}'
 ```
 
+### Supported column value types
+
+`spanner-assert` compares column values using only `string`, `number`, `boolean`, and `null`. For other Spanner types such as `TIMESTAMP` or `DATE`, provide the expected value as a string (for example, `"2024-01-01T00:00:00Z"`).
+
 3. Run the assertion from a script:
 
 ```ts
