@@ -33,19 +33,6 @@ export async function fetchCount(
   return normalizeNumericValue(rows[0].toJSON().total);
 }
 
-export async function fetchRows(
-  database: Database,
-  quotedTableName: string,
-  limit: number
-): Promise<Record<string, unknown>[]> {
-  const query: QueryRequest = {
-    sql: `SELECT * FROM ${quotedTableName} LIMIT ${limit}`,
-  };
-
-  const [rows] = await database.run(query);
-  return rows.map((row) => row.toJSON());
-}
-
 export async function fetchAllRows(
   database: Database,
   quotedTableName: string,

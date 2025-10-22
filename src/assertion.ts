@@ -1,19 +1,18 @@
 import type { Database } from "@google-cloud/spanner";
 
 import { SpannerAssertionError } from "./errors.ts";
+import {
+  buildSelectColumns,
+  fetchAllRows,
+  fetchCount,
+  findMissingRows,
+  quoteIdentifier,
+} from "./fetch.ts";
 import type {
   ExpectationsFile,
   TableColumnExpectations,
   TableExpectation,
 } from "./types.ts";
-import {
-  buildSelectColumns,
-  fetchAllRows,
-  fetchCount,
-  fetchRows,
-  findMissingRows,
-  quoteIdentifier,
-} from "./fetch.ts";
 
 export async function assertExpectations(
   database: Database,
@@ -134,7 +133,9 @@ async function assertRows(
     const totalActualRows = actualRows.length;
     const actualRowsText =
       actualRowsPreview +
-      (totalActualRows > 5 ? `\n    ... (${totalActualRows - 5} more rows)` : "");
+      (totalActualRows > 5
+        ? `\n    ... (${totalActualRows - 5} more rows)`
+        : "");
 
     throw new SpannerAssertionError(
       `${missingRows.length} expected row(s) not found in table "${tableName}".\n` +
