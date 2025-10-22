@@ -70,35 +70,22 @@ export function buildSelectColumns(rows: TableColumnExpectations[]): string[] {
   return Array.from(columns);
 }
 
-export function normalizeRow(row: TableColumnExpectations): string {
-  const sorted = Object.keys(row).sort();
-  return JSON.stringify(sorted.map((key) => [key, row[key]]));
-}
-
 export function findMissingRows(
   expectedRows: TableColumnExpectations[],
   actualRows: Record<string, unknown>[]
 ): TableColumnExpectations[] {
-  const expectedSet = new Map<string, TableColumnExpectations>();
-  for (const row of expectedRows) {
-    const normalized = normalizeRow(row);
-    expectedSet.set(normalized, row);
-  }
-
-  const actualSet = new Set<string>();
-  for (const actualRow of actualRows) {
-    for (const expectedRow of expectedRows) {
-      if (rowMatches(expectedRow, actualRow)) {
-        const normalized = normalizeRow(expectedRow);
-        actualSet.add(normalized);
-      }
-    }
-  }
-
   const missing: TableColumnExpectations[] = [];
-  for (const [normalized, originalRow] of expectedSet) {
-    if (!actualSet.has(normalized)) {
-      missing.push(originalRow);
+  const remainingActual = [...actualRows];
+
+  for (const expected of expectedRows) {
+    const index = remainingActual.findIndex((actual) =>
+      rowMatches(expected, actual)
+    );
+
+    if (index === -1) {
+      missing.push(expected);
+    } else {
+      remainingActual.splice(index, 1);
     }
   }
 
