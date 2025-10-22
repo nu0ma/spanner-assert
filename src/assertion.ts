@@ -2,7 +2,6 @@ import type { Database } from "@google-cloud/spanner";
 
 import { SpannerAssertionError } from "./errors.ts";
 import {
-  buildSelectColumns,
   fetchAllRows,
   fetchCount,
   findMissingRows,
@@ -116,8 +115,7 @@ async function assertRows(
   quotedTableName: string,
   expectedRows: TableColumnExpectations[]
 ): Promise<void> {
-  const columns = buildSelectColumns(expectedRows);
-  const actualRows = await fetchAllRows(database, quotedTableName, columns);
+  const actualRows = await fetchAllRows(database, quotedTableName, expectedRows);
   const missingRows = findMissingRows(expectedRows, actualRows);
 
   if (missingRows.length > 0) {

@@ -36,25 +36,22 @@ export async function fetchCount(
 export async function fetchAllRows(
   database: Database,
   quotedTableName: string,
-  columns: string[]
+  expectedRows: TableColumnExpectations[]
 ): Promise<Record<string, unknown>[]> {
-  const columnList = columns.map(quoteIdentifier).join(", ");
+  const columns = new Set<string>();
+  for (const row of expectedRows) {
+    for (const col of Object.keys(row)) {
+      columns.add(col);
+    }
+  }
+
+  const columnList = Array.from(columns).map(quoteIdentifier).join(", ");
   const query: QueryRequest = {
     sql: `SELECT ${columnList} FROM ${quotedTableName}`,
   };
 
   const [rows] = await database.run(query);
   return rows.map((row) => row.toJSON());
-}
-
-export function buildSelectColumns(rows: TableColumnExpectations[]): string[] {
-  const columns = new Set<string>();
-  for (const row of rows) {
-    for (const col of Object.keys(row)) {
-      columns.add(col);
-    }
-  }
-  return Array.from(columns);
 }
 
 export function findMissingRows(
