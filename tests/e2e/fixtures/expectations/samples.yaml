@@ -1,23 +1,23 @@
 tables:
   Users:
     count: 1
-    columns:
-      UserID: user-001
-      Name: Alice Example
-      Email: alice@example.com
-      Status: 1
+    rows:
+      - UserID: user-001
+        Name: Alice Example
+        Email: alice@example.com
+        Status: 1
   Products:
     count: 1
-    columns:
-      ProductID: product-001
-      Name: Example Product
-      Price: 1999
-      IsActive: true
-      CategoryID: null
+    rows:
+      - ProductID: product-001
+        Name: Example Product
+        Price: 1999
+        IsActive: true
+        CategoryID: null
   Books:
     count: 1
-    columns:
-      BookID: book-001
-      Title: Example Book
-      Author: Jane Doe
-      PublishedYear: 2024
+    rows:
+      - BookID: book-001
+        Title: Example Book
+        Author: Jane Doe
+        PublishedYear: 2024

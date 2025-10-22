@@ -46,6 +46,81 @@ export async function fetchRows(
   return rows.map((row) => row.toJSON());
 }
 
+export async function fetchAllRows(
+  database: Database,
+  quotedTableName: string,
+  columns: string[]
+): Promise<Record<string, unknown>[]> {
+  const columnList = columns.map(quoteIdentifier).join(", ");
+  const query: QueryRequest = {
+    sql: `SELECT ${columnList} FROM ${quotedTableName}`,
+  };
+
+  const [rows] = await database.run(query);
+  return rows.map((row) => row.toJSON());
+}
+
+export function buildSelectColumns(rows: TableColumnExpectations[]): string[] {
+  const columns = new Set<string>();
+  for (const row of rows) {
+    for (const col of Object.keys(row)) {
+      columns.add(col);
+    }
+  }
+  return Array.from(columns);
+}
+
+export function normalizeRow(row: TableColumnExpectations): string {
+  const sorted = Object.keys(row).sort();
+  return JSON.stringify(sorted.map((key) => [key, row[key]]));
+}
+
+export function findMissingRows(
+  expectedRows: TableColumnExpectations[],
+  actualRows: Record<string, unknown>[]
+): TableColumnExpectations[] {
+  const expectedSet = new Map<string, TableColumnExpectations>();
+  for (const row of expectedRows) {
+    const normalized = normalizeRow(row);
+    expectedSet.set(normalized, row);
+  }
+
+  const actualSet = new Set<string>();
+  for (const actualRow of actualRows) {
+    for (const expectedRow of expectedRows) {
+      if (rowMatches(expectedRow, actualRow)) {
+        const normalized = normalizeRow(expectedRow);
+        actualSet.add(normalized);
+      }
+    }
+  }
+
+  const missing: TableColumnExpectations[] = [];
+  for (const [normalized, originalRow] of expectedSet) {
+    if (!actualSet.has(normalized)) {
+      missing.push(originalRow);
+    }
+  }
+
+  return missing;
+}
+
+function rowMatches(
+  expected: TableColumnExpectations,
+  actual: Record<string, unknown>
+): boolean {
+  for (const [column, expectedValue] of Object.entries(expected)) {
+    const actualValue = actual[column];
+
+    if (expectedValue === null) {
+      if (actualValue !== null) return false;
+    } else {
+      if (actualValue !== expectedValue) return false;
+    }
+  }
+  return true;
+}
+
 function normalizeNumericValue(value: unknown): number {
   if (typeof value === "number") {
     return value;
