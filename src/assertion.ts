@@ -13,7 +13,7 @@ import {
   fetchRows,
   findMissingRows,
   quoteIdentifier,
-} from "./utils.ts";
+} from "./fetch.ts";
 
 export async function assertExpectations(
   database: Database,
