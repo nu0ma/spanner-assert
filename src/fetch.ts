@@ -10,7 +10,6 @@ type QueryRequest = {
   params?: Record<string, ColumnValue>;
 };
 
-
 async function executeQuery(
   database: Database,
   query: QueryRequest
@@ -18,7 +17,6 @@ async function executeQuery(
   const [rows] = await database.run(query);
   return rows.map((row) => row.toJSON());
 }
-
 
 function buildQueryRequest(
   sql: string,
