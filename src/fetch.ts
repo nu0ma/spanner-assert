@@ -10,6 +10,27 @@ type QueryRequest = {
   params?: Record<string, ColumnValue>;
 };
 
+async function executeQuery(
+  database: Database,
+  query: QueryRequest
+): Promise<Record<string, unknown>[]> {
+  const [rows] = await database.run(query);
+  return rows.map((row) => row.toJSON());
+}
+
+function buildQueryRequest(
+  sql: string,
+  params?: Record<string, ColumnValue>
+): QueryRequest {
+  const query: QueryRequest = { sql };
+
+  if (params && Object.keys(params).length > 0) {
+    query.params = params;
+  }
+
+  return query;
+}
+
 export async function fetchCount(
   database: Database,
   quotedTableName: string,
@@ -17,20 +38,15 @@ export async function fetchCount(
 ): Promise<number> {
   const { whereClause, params } = buildWhereClause(conditions);
 
-  const query: QueryRequest = {
-    sql: `SELECT COUNT(*) AS total FROM ${quotedTableName}${whereClause}`,
-  };
+  const sql = `SELECT COUNT(*) AS total FROM ${quotedTableName}${whereClause}`;
+  const query = buildQueryRequest(sql, params);
 
-  if (params && Object.keys(params).length > 0) {
-    query.params = params;
-  }
-
-  const [rows] = await database.run(query);
+  const rows = await executeQuery(database, query);
   if (!rows.length) {
     return 0;
   }
 
-  return normalizeNumericValue(rows[0].toJSON().total);
+  return normalizeNumericValue(rows[0].total);
 }
 
 export async function fetchAllRows(
@@ -46,12 +62,10 @@ export async function fetchAllRows(
   }
 
   const columnList = Array.from(columns).map(quoteIdentifier).join(", ");
-  const query: QueryRequest = {
-    sql: `SELECT ${columnList} FROM ${quotedTableName}`,
-  };
+  const sql = `SELECT ${columnList} FROM ${quotedTableName}`;
+  const query = buildQueryRequest(sql);
 
-  const [rows] = await database.run(query);
-  return rows.map((row) => row.toJSON());
+  return executeQuery(database, query);
 }
 
 export function findMissingRows(
