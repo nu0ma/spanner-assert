@@ -1,12 +1,17 @@
 import type { Database } from "@google-cloud/spanner";
 
 import { SpannerAssertionError } from "./errors.ts";
+import {
+  fetchAllRows,
+  fetchCount,
+  findMissingRows,
+  quoteIdentifier,
+} from "./fetch.ts";
 import type {
   ExpectationsFile,
   TableColumnExpectations,
   TableExpectation,
 } from "./types.ts";
-import { fetchCount, fetchRows, quoteIdentifier } from "./utils.ts";
 
 export async function assertExpectations(
   database: Database,
@@ -17,7 +22,7 @@ export async function assertExpectations(
   }
 }
 
-type AssertionType = "count" | "columns";
+type AssertionType = "count" | "rows";
 
 async function assertTable(
   database: Database,
@@ -26,12 +31,35 @@ async function assertTable(
 ): Promise<void> {
   const quotedTableName = quoteIdentifier(tableName);
 
+  if (expectation.rows) {
+    if (expectation.rows.length === 0) {
+      throw new SpannerAssertionError(
+        `Invalid expectation: rows array cannot be empty in table "${tableName}".`,
+        { table: tableName }
+      );
+    }
+
+    if (
+      typeof expectation.count === "number" &&
+      expectation.rows.length > expectation.count
+    ) {
+      throw new SpannerAssertionError(
+        `Invalid expectation: specified ${expectation.rows.length} rows but count is ${expectation.count} in table "${tableName}".`,
+        {
+          table: tableName,
+          rowsCount: expectation.rows.length,
+          expectedCount: expectation.count,
+        }
+      );
+    }
+  }
+
   const assertionTypes: AssertionType[] = [];
   if (typeof expectation.count === "number") {
     assertionTypes.push("count");
   }
-  if (expectation.columns) {
-    assertionTypes.push("columns");
+  if (expectation.rows) {
+    assertionTypes.push("rows");
   }
 
   for (const type of assertionTypes) {
@@ -45,12 +73,12 @@ async function assertTable(
         );
         break;
 
-      case "columns":
-        await assertColumnValues(
+      case "rows":
+        await assertRows(
           database,
           tableName,
           quotedTableName,
-          expectation.columns as TableColumnExpectations
+          expectation.rows as TableColumnExpectations[]
         );
         break;
 
@@ -81,22 +109,40 @@ async function assertRowCount(
   }
 }
 
-async function assertColumnValues(
+async function assertRows(
   database: Database,
   tableName: string,
   quotedTableName: string,
-  columns: TableColumnExpectations
+  expectedRows: TableColumnExpectations[]
 ): Promise<void> {
-  const matchedCount = await fetchCount(database, quotedTableName, columns);
-  if (matchedCount === 0) {
-    // Fetch actual data to show in error message
-    const actualRows = await fetchRows(database, quotedTableName, 5);
+  const actualRows = await fetchAllRows(database, quotedTableName, expectedRows);
+  const missingRows = findMissingRows(expectedRows, actualRows);
+
+  if (missingRows.length > 0) {
+    const missingRowsText = missingRows
+      .map((row, index) => `    ${index + 1}. ${JSON.stringify(row)}`)
+      .join("\n");
+
+    const actualRowsPreview = actualRows
+      .slice(0, 5)
+      .map((row, index) => `    ${index + 1}. ${JSON.stringify(row)}`)
+      .join("\n");
+
+    const totalActualRows = actualRows.length;
+    const actualRowsText =
+      actualRowsPreview +
+      (totalActualRows > 5
+        ? `\n    ... (${totalActualRows - 5} more rows)`
+        : "");
+
     throw new SpannerAssertionError(
-      `No rows matched the expected column values in table "${tableName}".`,
+      `${missingRows.length} expected row(s) not found in table "${tableName}".\n` +
+        `  Missing rows:\n${missingRowsText}\n\n` +
+        `  Actual rows (showing first 5 of ${totalActualRows} total):\n${actualRowsText}`,
       {
         table: tableName,
-        expected: columns,
-        actual: actualRows.length > 0 ? actualRows : "No rows found in table",
+        missingRows,
+        actualRowsCount: totalActualRows,
       }
     );
   }

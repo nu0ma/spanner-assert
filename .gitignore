@@ -5,3 +5,4 @@ coverage
 *.log
 .eslintcache
 .claude
+test-results/

@@ -55,7 +55,7 @@ export async function loadExpectationsFromFile(
       );
     }
 
-    const { count, columns, ...rest } = expectation as TableExpectation &
+    const { count, rows, ...rest } = expectation as TableExpectation &
       Record<string, unknown>;
 
     if (count !== undefined && typeof count !== "number") {
@@ -64,17 +64,31 @@ export async function loadExpectationsFromFile(
       );
     }
 
-    if (
-      columns !== undefined &&
-      (typeof columns !== "object" || Array.isArray(columns))
-    ) {
+    if (rows !== undefined && !Array.isArray(rows)) {
       throw new InvalidExpectationFileError(
-        `${tableName}.columns must be an object.`
+        `${tableName}.rows must be an array.`
       );
     }
 
-    if (columns) {
-      validateColumnValues(tableName, columns as Record<string, unknown>);
+    if (rows) {
+      if (rows.length === 0) {
+        throw new InvalidExpectationFileError(
+          `${tableName}.rows cannot be an empty array.`
+        );
+      }
+
+      for (let i = 0; i < rows.length; i++) {
+        const row = rows[i];
+        if (!row || typeof row !== "object" || Array.isArray(row)) {
+          throw new InvalidExpectationFileError(
+            `${tableName}.rows[${i}] must be an object.`
+          );
+        }
+        validateColumnValues(
+          `${tableName}.rows[${i}]`,
+          row as Record<string, unknown>
+        );
+      }
     }
 
     const unexpectedKeys = Object.keys(rest);
@@ -86,7 +100,7 @@ export async function loadExpectationsFromFile(
 
     normalizedTables[tableName] = {
       ...(count !== undefined ? { count } : {}),
-      ...(columns !== undefined ? { columns } : {}),
+      ...(rows !== undefined ? { rows } : {}),
     };
   }
 
@@ -96,14 +110,14 @@ export async function loadExpectationsFromFile(
 }
 
 function validateColumnValues(
-  tableName: string,
+  context: string,
   columns: Record<string, unknown>
 ): void {
   for (const [columnName, value] of Object.entries(columns)) {
     if (!isSupportedColumnValue(value)) {
       const actualType = value === null ? "null" : typeof value;
       throw new InvalidExpectationFileError(
-        `${tableName}.columns.${columnName} must be a string, number, boolean, or null (received ${actualType}).`
+        `${context}.${columnName} must be a string, number, boolean, or null (received ${actualType}).`
       );
     }
   }

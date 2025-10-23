@@ -33,17 +33,63 @@ export async function fetchCount(
   return normalizeNumericValue(rows[0].toJSON().total);
 }
 
-export async function fetchRows(
+export async function fetchAllRows(
   database: Database,
   quotedTableName: string,
-  limit: number
+  expectedRows: TableColumnExpectations[]
 ): Promise<Record<string, unknown>[]> {
+  const columns = new Set<string>();
+  for (const row of expectedRows) {
+    for (const col of Object.keys(row)) {
+      columns.add(col);
+    }
+  }
+
+  const columnList = Array.from(columns).map(quoteIdentifier).join(", ");
   const query: QueryRequest = {
-    sql: `SELECT * FROM ${quotedTableName} LIMIT ${limit}`,
+    sql: `SELECT ${columnList} FROM ${quotedTableName}`,
   };
 
   const [rows] = await database.run(query);
   return rows.map((row) => row.toJSON());
+}
+
+export function findMissingRows(
+  expectedRows: TableColumnExpectations[],
+  actualRows: Record<string, unknown>[]
+): TableColumnExpectations[] {
+  const missing: TableColumnExpectations[] = [];
+  const remainingActual = [...actualRows];
+
+  for (const expected of expectedRows) {
+    const index = remainingActual.findIndex((actual) =>
+      rowMatches(expected, actual)
+    );
+
+    if (index === -1) {
+      missing.push(expected);
+    } else {
+      remainingActual.splice(index, 1);
+    }
+  }
+
+  return missing;
+}
+
+function rowMatches(
+  expected: TableColumnExpectations,
+  actual: Record<string, unknown>
+): boolean {
+  for (const [column, expectedValue] of Object.entries(expected)) {
+    const actualValue = actual[column];
+
+    if (expectedValue === null) {
+      if (actualValue !== null) return false;
+    } else {
+      if (actualValue !== expectedValue) return false;
+    }
+  }
+  return true;
 }
 
 function normalizeNumericValue(value: unknown): number {
