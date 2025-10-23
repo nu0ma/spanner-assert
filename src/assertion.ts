@@ -119,30 +119,12 @@ async function assertRows(
   const missingRows = findMissingRows(expectedRows, actualRows);
 
   if (missingRows.length > 0) {
-    const missingRowsText = missingRows
-      .map((row, index) => `    ${index + 1}. ${JSON.stringify(row)}`)
-      .join("\n");
-
-    const actualRowsPreview = actualRows
-      .slice(0, 5)
-      .map((row, index) => `    ${index + 1}. ${JSON.stringify(row)}`)
-      .join("\n");
-
-    const totalActualRows = actualRows.length;
-    const actualRowsText =
-      actualRowsPreview +
-      (totalActualRows > 5
-        ? `\n    ... (${totalActualRows - 5} more rows)`
-        : "");
-
     throw new SpannerAssertionError(
-      `${missingRows.length} expected row(s) not found in table "${tableName}".\n` +
-        `  Missing rows:\n${missingRowsText}\n\n` +
-        `  Actual rows (showing first 5 of ${totalActualRows} total):\n${actualRowsText}`,
+      `${missingRows.length} expected row(s) not found in table "${tableName}".`,
       {
         table: tableName,
-        missingRows,
-        actualRowsCount: totalActualRows,
+        expected: expectedRows,
+        actual: actualRows,
       }
     );
   }
