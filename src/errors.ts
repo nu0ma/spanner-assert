@@ -62,3 +62,10 @@ export class SpannerAssertionError extends Error {
     this.details = details;
   }
 }
+
+export class InvalidExpectationFileError extends Error {
+  constructor(message: string) {
+    super(`Expectation file format is invalid: ${message}`);
+    this.name = "InvalidExpectationFileError";
+  }
+}

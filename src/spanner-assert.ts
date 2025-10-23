@@ -3,8 +3,7 @@ import { resolveConnectionConfig } from "./config.ts";
 import { loadExpectationsFromFile } from "./expectation-loader.ts";
 import { openDatabase } from "./spanner-client.ts";
 import type {
-  ExpectationsFile,
-  ResolvedSpannerConnectionConfig,
+  SpannerConnectionConfig,
   SpannerAssertOptions,
   SpannerAssertInstance,
 } from "./types.ts";
@@ -12,40 +11,26 @@ import type {
 export function createSpannerAssert(
   options: SpannerAssertOptions
 ): SpannerAssertInstance {
-  const resolvedConfig = resolveConnectionConfig(options.connection);
-
-  const openHandle = () => openDatabase(resolvedConfig);
-
-  const assertWithExpectations = async (
-    expectations: ExpectationsFile
-  ): Promise<void> => {
-    const handle = openHandle();
-
-    try {
-      await assertExpectations(handle.database, expectations);
-    } finally {
-      await handle.close();
-    }
-  };
+  // setup db connection
+  const config = resolveConnectionConfig(options.connection);
+  const dbHandle = openDatabase(config);
 
   const assert = async (expectedFile: string): Promise<void> => {
     const expectations = await loadExpectationsFromFile(expectedFile);
-    await assertWithExpectations(expectations);
+
+    try {
+      await assertExpectations(dbHandle.database, expectations);
+    } finally {
+      await dbHandle.close();
+    }
   };
 
-  const assertExpectationsPublic = async (
-    expectations: ExpectationsFile
-  ): Promise<void> => {
-    await assertWithExpectations(expectations);
-  };
-
-  const getConnectionInfo = (): ResolvedSpannerConnectionConfig => ({
-    ...resolvedConfig,
+  const getConnectionInfo = (): SpannerConnectionConfig => ({
+    ...config,
   });
 
   return {
     assert,
-    assertExpectations: assertExpectationsPublic,
     getConnectionInfo,
   };
 }

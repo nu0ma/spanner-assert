@@ -4,21 +4,19 @@ import {
   Spanner,
 } from "@google-cloud/spanner";
 
-import type { ResolvedSpannerConnectionConfig } from "./types.ts";
+import type { SpannerConnectionConfig } from "./types.ts";
 
 export type DatabaseHandle = {
   database: Database;
   close(): Promise<void>;
 };
 
-export function openDatabase(
-  config: ResolvedSpannerConnectionConfig
-): DatabaseHandle {
+export function openDatabase(config: SpannerConnectionConfig): DatabaseHandle {
   const clientConfig: SpannerOptions = {
     projectId: config.projectId,
   };
 
-  // Add emulator host configuration if provided
+  // configure emulator host if provided
   if (config.emulatorHost) {
     clientConfig.servicePath = config.emulatorHost.split(":")[0];
     clientConfig.port = Number.parseInt(
