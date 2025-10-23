@@ -1,36 +1,48 @@
+import { diff } from "jest-diff";
 import pc from "picocolors";
 
 function formatValue(value: unknown): string {
   if (value === null) {
-    return pc.gray("null");
+    return "null";
   }
   if (value === undefined) {
-    return pc.gray("undefined");
+    return "undefined";
   }
   if (typeof value === "string") {
-    return pc.green(`"${value}"`);
+    return `"${value}"`;
   }
   if (typeof value === "object") {
     return JSON.stringify(value, null, 2);
   }
-  return pc.yellow(String(value));
+  return String(value);
 }
 
 function formatDetails(details: Record<string, unknown>): string {
   const lines: string[] = [];
 
   if ("expected" in details && "actual" in details) {
-    lines.push(
-      `  ${pc.cyan("Expected:")} ${pc.cyan(formatValue(details.expected))}`
-    );
-    lines.push(
-      `  ${pc.red("Actual:  ")} ${pc.red(formatValue(details.actual))}`
-    );
+    const diffResult = diff(details.expected, details.actual, {
+      aAnnotation: "Expected",
+      bAnnotation: "Actual",
+      aColor: pc.green,
+      bColor: pc.red,
+      contextLines: 3,
+      expand: false,
+    });
 
-    // Add other details except expected/actual
+    if (
+      diffResult &&
+      diffResult !== "Compared values have no visual difference."
+    ) {
+      lines.push(diffResult);
+    } else {
+      lines.push(`  ${pc.green("Expected:")} ${formatValue(details.expected)}`);
+      lines.push(`  ${pc.red("Actual:  ")} ${formatValue(details.actual)}`);
+    }
+
     for (const [key, value] of Object.entries(details)) {
       if (key !== "expected" && key !== "actual") {
-        lines.push(`  ${pc.dim(key + ":")} ${formatValue(value)}`);
+        lines.push(`  ${key}: ${formatValue(value)}`);
       }
     }
   } else if ("columns" in details) {
