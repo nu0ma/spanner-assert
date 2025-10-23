@@ -4,7 +4,7 @@ export type TableColumnExpectations = Record<string, ColumnValue>;
 
 export type TableExpectation = {
   count?: number;
-  rows?: TableColumnExpectations[];
+  rows: TableColumnExpectations[];
 };
 
 export type ExpectationsFile = {
@@ -18,14 +18,11 @@ export type SpannerConnectionConfig = {
   emulatorHost?: string;
 };
 
-export type ResolvedSpannerConnectionConfig = SpannerConnectionConfig;
-
 export type SpannerAssertOptions = {
   connection: SpannerConnectionConfig;
 };
 
 export type SpannerAssertInstance = {
   assert(expectedFile: string): Promise<void>;
-  assertExpectations(expectations: ExpectationsFile): Promise<void>;
-  getConnectionInfo(): ResolvedSpannerConnectionConfig;
+  getConnectionInfo(): SpannerConnectionConfig;
 };

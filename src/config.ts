@@ -1,7 +1,4 @@
-import type {
-  ResolvedSpannerConnectionConfig,
-  SpannerConnectionConfig,
-} from "./types.ts";
+import type { SpannerConnectionConfig } from "./types.ts";
 
 export class MissingConfigurationError extends Error {
   constructor(field: string) {
@@ -10,14 +7,12 @@ export class MissingConfigurationError extends Error {
   }
 }
 
-export type ResolveConfigOptions = Partial<SpannerConnectionConfig>;
-
 /**
  * Resolve Cloud Spanner connection settings from explicit configuration.
  */
 export function resolveConnectionConfig(
-  config: ResolveConfigOptions,
-): ResolvedSpannerConnectionConfig {
+  config: SpannerConnectionConfig
+): SpannerConnectionConfig {
   const { projectId, instanceId, databaseId, emulatorHost } = config;
 
   if (!projectId) {

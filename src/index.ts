@@ -5,5 +5,4 @@ export type {
   SpannerAssertInstance,
   SpannerAssertOptions,
   SpannerConnectionConfig,
-  ResolvedSpannerConnectionConfig,
 } from "./types.ts";
