@@ -18,30 +18,32 @@ npm install spanner-assert
 # expectations.yaml
 tables:
   Users:
-    columns:
-      UserID: "user-001"
-      Name: "Alice Example"
-      Email: "alice@example.com"
-      Status: 1
-      CreatedAt: "2024-01-01T00:00:00Z"
+    rows:
+      - UserID: "user-001"
+        Name: "Alice Example"
+        Email: "alice@example.com"
+        Status: 1
+        CreatedAt: "2024-01-01T00:00:00Z"
   Products:
-    columns:
-      ProductID: "product-001"
-      Name: "Example Product"
-      Price: 1999
-      IsActive: true
-      CategoryID: null
-      CreatedAt: "2024-01-01T00:00:00Z"
+    rows:
+      - ProductID: "product-001"
+        Name: "Example Product"
+        Price: 1999
+        IsActive: true
+        CategoryID: null
+        CreatedAt: "2024-01-01T00:00:00Z"
   Books:
-    columns:
-      BookID: "book-001"
-      Title: "Example Book"
-      Author: "Jane Doe"
-      PublishedYear: 2024
-      JSONData: '{"genre":"Fiction","rating":4.5}'
+    rows:
+      - BookID: "book-001"
+        Title: "Example Book"
+        Author: "Jane Doe"
+        PublishedYear: 2024
+        JSONData: '{"genre":"Fiction","rating":4.5}'
 ```
 
-### Supported column value types
+Each table lists expected rows as an array. Add an optional `count` field when you also want to assert the total number of rows returned.
+
+### Supported value types
 
 `spanner-assert` compares column values using only `string`, `number`, `boolean`, and `null`. For other Spanner types such as `TIMESTAMP` or `DATE`, provide the expected value as a string (for example, `"2024-01-01T00:00:00Z"`).
 
@@ -146,10 +148,10 @@ test.describe('User Registration Flow', () => {
 tables:
   Users:
     count: 1
-    columns:
-      Email: "alice@example.com"
-      Name: "Alice Example"
-      Status: 1
+    rows:
+      - Email: "alice@example.com"
+        Name: "Alice Example"
+        Status: 1
 ```
 
 **Example with multiple tables** (`test/expectations/product-inventory.yaml`):
@@ -157,15 +159,17 @@ tables:
 ```yaml
 tables:
   Products:
-    columns:
-      Name: "Example Product"
-      Price: 1999
-      IsActive: true
+    count: 1
+    rows:
+      - Name: "Example Product"
+        Price: 1999
+        IsActive: true
   Inventory:
-    columns:
-      ProductID: "product-001"
-      Quantity: 0
-      LastUpdated: "2024-01-01T00:00:00Z"
+    count: 1
+    rows:
+      - ProductID: "product-001"
+        Quantity: 0
+        LastUpdated: "2024-01-01T00:00:00Z"
 ```
 
 This pattern allows you to:
