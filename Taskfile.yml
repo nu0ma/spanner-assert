@@ -1,13 +1,13 @@
 version: "3"
 
 vars:
-  PROJECT: '{{default "e2e-project" .ENV.SPANNER_PROJECT}}'
-  INSTANCE: '{{default "e2e-instance" .ENV.SPANNER_INSTANCE}}'
-  DATABASE: '{{default "e2e-database" .ENV.SPANNER_DATABASE}}'
-  EMULATOR_PORT: '{{default "9010" .ENV.SPANNER_EMULATOR_PORT}}'
-  EMULATOR_HOST: '{{default (printf "127.0.0.1:%s" .EMULATOR_PORT) .ENV.SPANNER_EMULATOR_HOST}}'
-  EMULATOR_ADMIN_PORT: '{{default "9020" .ENV.SPANNER_EMULATOR_ADMIN_PORT}}'
-  EMULATOR_CONTAINER: '{{default "spanner-emulator" .ENV.SPANNER_EMULATOR_CONTAINER}}'
+  PROJECT: 'e2e-project'
+  INSTANCE: 'e2e-instance'
+  DATABASE: 'e2e-database'
+  EMULATOR_PORT: '9010'
+  EMULATOR_HOST: '127.0.0.1:9010'
+  EMULATOR_ADMIN_PORT: '9020'
+  EMULATOR_CONTAINER: 'spanner-emulator'
   FIXTURES_DIR: tests/e2e/fixtures
   SCHEMA: '{{printf "%s/schema/schema.sql" .FIXTURES_DIR}}'
   PLAYWRIGHT_CONFIG: playwright.config.ts
