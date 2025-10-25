@@ -100,8 +100,6 @@ jobs:
       - name: Publish to npm with provenance
         if: steps.tag-check.outputs.exists == 'false'
         run: pnpm publish --provenance --access public --no-git-checks
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Create GitHub Release with tag
         id: create-release
