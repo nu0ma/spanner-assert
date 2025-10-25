@@ -87,6 +87,125 @@ SpannerAssertionError: 1 expected row(s) not found in table "Users".
 
 An error is thrown with a color-coded diff showing expected vs actual values (using jest-diff).
 
+## Row Matching Algorithm
+
+`spanner-assert` uses a **greedy matching algorithm** to compare expected rows against actual database rows. Understanding this behavior helps you write effective test expectations.
+
+### How It Works
+
+The algorithm processes expected rows sequentially:
+
+1. For each expected row, it searches through the remaining actual rows
+2. When a match is found, that actual row is **immediately consumed** (removed from the pool)
+3. The algorithm moves to the next expected row
+4. Any expected rows that don't find a match are reported as missing
+
+**Key characteristics:**
+
+- **Subset matching**: Only columns specified in the expected row are compared. Additional columns in the database are ignored.
+- **Greedy selection**: The first matching actual row is chosen—no backtracking or optimization.
+- **Order-dependent**: The order of expected rows can affect the outcome if expectations are ambiguous.
+
+### Example: Subset Matching
+
+```yaml
+# Expected (only 2 columns specified)
+tables:
+  Users:
+    rows:
+      - Email: "alice@example.com"
+        Status: 1
+```
+
+This will match a database row even if it has additional columns:
+
+```
+Actual database row:
+{
+  UserID: "user-001",
+  Name: "Alice Example",
+  Email: "alice@example.com",  ✅ matches
+  Status: 1,                    ✅ matches
+  CreatedAt: "2024-01-01T..."  ⬜ ignored (not in expectation)
+}
+```
+
+### Best Practice: Use Unique Identifiers
+
+To avoid ambiguity and ensure reliable matching, **always include unique columns** (like primary keys) in your expectations:
+
+```yaml
+# ✅ Good: Specific and unambiguous
+tables:
+  Users:
+    rows:
+      - UserID: "user-001"      # Primary key ensures unique match
+        Email: "alice@example.com"
+        Status: 1
+      - UserID: "user-002"
+        Email: "bob@example.com"
+        Status: 1
+
+# ❌ Risky: Ambiguous expectations
+tables:
+  Users:
+    rows:
+      - Status: 1               # Could match any user with Status=1
+      - Status: 1               # Order-dependent, may fail unexpectedly
+```
+
+### When Greedy Matching Can Fail
+
+Consider this scenario:
+
+```yaml
+# Actual database has 3 rows:
+# - { UserID: "A", Status: 1 }
+# - { UserID: "B", Status: 1 }
+# - { UserID: "C", Status: 2 }
+
+# Expectations:
+tables:
+  Users:
+    rows:
+      - Status: 1           # ① Ambiguous - matches A or B
+      - UserID: "A"         # ② Specific - needs A
+```
+
+The greedy algorithm will:
+1. Process expectation ①, match it to the first row with `Status: 1` (e.g., row A), and consume row A
+2. Process expectation ②, look for `UserID: "A"`, but row A was already consumed
+3. **Result: Assertion fails** even though a valid assignment exists
+
+**Solution**: Make expectations specific:
+
+```yaml
+tables:
+  Users:
+    rows:
+      - UserID: "A"         # Specific - matches only A
+        Status: 1
+      - UserID: "B"         # Specific - matches only B
+        Status: 1
+```
+
+### Combining `count` and `rows`
+
+Use both for comprehensive validation:
+
+```yaml
+tables:
+  Users:
+    count: 10                    # Total row count
+    rows:
+      - UserID: "admin-001"      # Verify specific admin exists
+        Role: "admin"
+```
+
+This ensures:
+- Exactly 10 users exist (not 9 or 11)
+- At least one admin user with ID "admin-001" exists
+
 ## Usage with Playwright
 
 Here's a practical example of using `spanner-assert` in Playwright E2E tests to validate database state after user interactions:
