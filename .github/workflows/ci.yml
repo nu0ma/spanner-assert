@@ -38,7 +38,7 @@ jobs:
         run: |
           go install github.com/cloudspannerecosystem/wrench@latest
           go install github.com/nu0ma/spalidate@latest
-          echo "$HOME/go/bin" >> $GITHUB_PATH
+          echo "$HOME/go/bin" >> "$GITHUB_PATH"
 
       - name: Lint
         run: pnpm run lint
