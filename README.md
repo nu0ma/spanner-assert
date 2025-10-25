@@ -99,11 +99,12 @@ test.describe('User Registration Flow', () => {
   let spannerAssert;
 
   test.beforeAll(async () => {
-    // Initialize spanner-assert once for all tests
-    // Minimal config - uses emulator defaults
     spannerAssert = createSpannerAssert({
       connection: {
-        databaseId: 'test-database',
+        projectId: "your-project-id",    
+        instanceId: "your-instance-id",    
+        databaseId: "your-database",
+        emulatorHost: "127.0.0.1:9010",
       },
     });
   });
