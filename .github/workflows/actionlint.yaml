@@ -1,6 +1,10 @@
 name: Lint GitHub Actions workflows
 on: [push, pull_request]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   actionlint:
     runs-on: ubuntu-latest
