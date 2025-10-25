@@ -4,7 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-`spanner-assert` is a Node.js library for validating Google Cloud Spanner database state against YAML-defined expectations. It's designed for E2E testing workflows (especially with Playwright) to assert database records match expected values after UI interactions or API calls.
+`spanner-assert` is a Node.js testing library for validating Google Cloud Spanner **emulator** database state against YAML-defined expectations. It's designed exclusively for E2E testing workflows (especially with Playwright) to assert database records match expected values after UI interactions or API calls.
+
+**⚠️ Emulator-only**: This library only supports Cloud Spanner emulator, not production databases.
 
 **Core value**: Declarative YAML expectations for database assertions instead of imperative query-and-compare code.
 
@@ -55,15 +57,23 @@ Returns `SpannerAssertInstance` with:
 **Connection lifecycle**: Database connection opened in factory, closed in `finally` after each `assert()` call.
 
 #### Configuration (src/config.ts)
-Validates required: `projectId`, `instanceId`, `databaseId`
-Optional `emulatorHost` overrides endpoint (format: `"host:port"` e.g., `"127.0.0.1:9010"`)
+**Required**: `databaseId` (actual database name)
+**Defaults provided**:
+- `projectId`: "test-project" (emulator dummy value)
+- `instanceId`: "test-instance" (emulator dummy value)
+- `emulatorHost`: "127.0.0.1:9010" (emulator endpoint)
+
+Format: `"host:port"` e.g., `"127.0.0.1:9010"`
 
 #### Database Client (src/spanner-client.ts)
-When `emulatorHost` provided:
+**Emulator-only configuration** (always applied):
 ```typescript
-clientConfig.servicePath = config.emulatorHost.split(":")[0];
-clientConfig.port = parseInt(config.emulatorHost.split(":")[1] || "9010");
-clientConfig.sslCreds = undefined;  // Disable SSL for emulator
+const [host, portStr] = config.emulatorHost.split(":");
+const port = parseInt(portStr || "9010");
+
+clientConfig.servicePath = host;
+clientConfig.port = port;
+clientConfig.sslCreds = undefined;  // Emulator uses insecure credentials
 ```
 
 #### Assertion Engine (src/assertion.ts)
@@ -152,7 +162,12 @@ await database.runTransactionAsync(async (transaction) => {
 ### Playwright Integration (tests/playwright/assert.spec.ts)
 Create `SpannerAssertInstance` once, reuse across tests:
 ```typescript
-const spannerAssert = createSpannerAssert({ connection: { ... } });
+// Minimal configuration (uses emulator defaults)
+const spannerAssert = createSpannerAssert({
+  connection: {
+    databaseId: "test-database"
+  }
+});
 
 test.beforeAll(async () => {
   await seed();  // Setup once

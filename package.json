@@ -1,9 +1,13 @@
 {
   "name": "spanner-assert",
   "version": "0.2.2",
-  "description": "Library for validating Cloud Spanner records against YAML expectations",
+  "description": "Testing library for validating Cloud Spanner emulator data against YAML expectations",
   "keywords": [
     "spanner",
+    "spanner-emulator",
+    "testing",
+    "e2e",
+    "playwright",
     "assertion",
     "yaml",
     "gcp"

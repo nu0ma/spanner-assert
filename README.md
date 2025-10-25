@@ -1,6 +1,8 @@
 # spanner-assert
 
-Validate Google Cloud Spanner data (emulator supported) against expectations written in YAML. Lightweight Node.js library, fast feedback loops.
+Validate Google Cloud Spanner **emulator** data against expectations written in YAML. Lightweight Node.js testing library for E2E workflows, fast feedback loops.
+
+> ⚠️ **This library only supports Cloud Spanner emulator** - designed for testing environments, not production databases.
 
 ## Install
 
@@ -10,7 +12,7 @@ npm install spanner-assert
 
 ## Quick Start
 
-1. Start the Spanner emulator (optional) and note the connection settings you want to validate against.
+1. Start the Spanner emulator and note the connection settings.
 
 2. Create an expectations YAML file:
 
@@ -52,12 +54,20 @@ Each table lists expected rows as an array. Add an optional `count` field when y
 ```ts
 import { createSpannerAssert } from "spanner-assert";
 
+// Minimal configuration (uses defaults for emulator)
 const spannerAssert = createSpannerAssert({
   connection: {
-    projectId: "your-project",
-    instanceId: "your-instance",
     databaseId: "your-database",
-    emulatorHost: "127.0.0.1:9010", // optional when using the emulator
+  },
+});
+
+// Or with explicit configuration
+const spannerAssert = createSpannerAssert({
+  connection: {
+    projectId: "test-project",       // default: "test-project"
+    instanceId: "test-instance",     // default: "test-instance"
+    databaseId: "your-database",     // required
+    emulatorHost: "127.0.0.1:9010",  // default: "127.0.0.1:9010"
   },
 });
 
@@ -91,12 +101,10 @@ test.describe('User Registration Flow', () => {
 
   test.beforeAll(async () => {
     // Initialize spanner-assert once for all tests
+    // Minimal config - uses emulator defaults
     spannerAssert = createSpannerAssert({
       connection: {
-        projectId: 'test-project',
-        instanceId: 'test-instance',
         databaseId: 'test-database',
-        emulatorHost: '127.0.0.1:9010',
       },
     });
   });

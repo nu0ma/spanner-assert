@@ -15,11 +15,11 @@ export type SpannerConnectionConfig = {
   projectId: string;
   instanceId: string;
   databaseId: string;
-  emulatorHost?: string;
+  emulatorHost: string;
 };
 
 export type SpannerAssertOptions = {
-  connection: SpannerConnectionConfig;
+  connection: SpannerConnectionConfig
 };
 
 export type SpannerAssertInstance = {
