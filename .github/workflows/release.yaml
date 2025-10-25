@@ -16,11 +16,12 @@ on:
 jobs:
   release:
     if: |
-      (github.event_name == 'pull_request' && 
+      (github.event_name == 'pull_request' &&
        github.event.pull_request.merged == true &&
        contains(github.event.pull_request.labels.*.name, 'Release')) ||
       github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     permissions:
       contents: write
       id-token: write
@@ -30,6 +31,7 @@ jobs:
         uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Setup pnpm
         uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
@@ -58,16 +60,16 @@ jobs:
             VERSION=$(node -p "require('./package.json').version")
           fi
           PACKAGE_NAME=$(node -p "require('./package.json').name")
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "name=$PACKAGE_NAME" >> $GITHUB_OUTPUT
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "name=$PACKAGE_NAME" >> "$GITHUB_OUTPUT"
 
       - name: Check if tag exists
         id: tag-check
         run: |
           if git rev-parse "v${{ steps.package.outputs.version }}" >/dev/null 2>&1; then
-            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "exists=true" >> "$GITHUB_OUTPUT"
           else
-            echo "exists=false" >> $GITHUB_OUTPUT
+            echo "exists=false" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Install dependencies
@@ -97,7 +99,6 @@ jobs:
         id: create-release
         if: steps.tag-check.outputs.exists == 'false'
         run: |
-          BRANCH="${{ github.event.pull_request.base.ref || github.ref_name }}"
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             RELEASE_URL=$(gh release create "v${{ steps.package.outputs.version }}" \
               --title "v${{ steps.package.outputs.version }}" \
@@ -111,7 +112,7 @@ jobs:
               --target "${{ github.sha }}" \
               --notes-file release_notes.md)
           fi
-          echo "url=$RELEASE_URL" >> $GITHUB_OUTPUT
+          echo "url=$RELEASE_URL" >> "$GITHUB_OUTPUT"
         env:
           GH_TOKEN: ${{ github.token }}
           PR_BODY: ${{ github.event.pull_request.body }}
