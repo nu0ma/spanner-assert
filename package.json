@@ -27,8 +27,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "pnpm run clean && tsdown --config tsdown.config.ts",
-    "clean": "rm -rf dist",
+    "build": "tsdown --config tsdown.config.ts",
     "preinstall": "npx only-allow pnpm",
     "lint": "eslint --cache .",
     "lint:fix": "eslint --cache . --fix",
