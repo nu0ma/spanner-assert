@@ -15,7 +15,6 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Build & Quality
 - `pnpm run build` - Compile TypeScript with tsdown (outputs to `dist/`)
-- `pnpm run clean` - Remove dist directory
 - `pnpm run lint` / `pnpm run lint:fix` - ESLint
 - `pnpm run prettier` / `pnpm run prettier:fix` - Code formatting
 - `pnpm run typecheck` - Type check without emitting files
