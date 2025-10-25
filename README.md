@@ -54,20 +54,12 @@ Each table lists expected rows as an array. Add an optional `count` field when y
 ```ts
 import { createSpannerAssert } from "spanner-assert";
 
-// Minimal configuration (uses defaults for emulator)
 const spannerAssert = createSpannerAssert({
   connection: {
+    projectId: "test-project",    
+    instanceId: "test-instance",    
     databaseId: "your-database",
-  },
-});
-
-// Or with explicit configuration
-const spannerAssert = createSpannerAssert({
-  connection: {
-    projectId: "test-project",       // default: "test-project"
-    instanceId: "test-instance",     // default: "test-instance"
-    databaseId: "your-database",     // required
-    emulatorHost: "127.0.0.1:9010",  // default: "127.0.0.1:9010"
+    emulatorHost: "127.0.0.1:9010",
   },
 });
 
@@ -81,12 +73,19 @@ On success you get no output (or your own logging) because all tables matched.
 ### If not successful
 
 ```text
-SpannerAssertionError: No rows matched the expected column values in Books.
-    expected columns: { JSONData: '{"genre":"Fiction","rating":4.5}' }
-    table: Books
+SpannerAssertionError: 1 expected row(s) not found in table "Books".
+  - Expected
+  + Actual
+
+  Array [
+    Object {
+-     "JSONData": "{\"genre\":\"Fiction\",\"rating\":4.5}",
++     "JSONData": "{\"genre\":\"NonFiction\",\"rating\":3.0}",
+    },
+  ]
 ```
 
-An error is thrown detailing which table and columns failed to match.
+An error is thrown with a color-coded diff showing expected vs actual values (using jest-diff).
 
 ## Usage with Playwright
 
