@@ -73,14 +73,14 @@ On success you get no output (or your own logging) because all tables matched.
 ### If not successful
 
 ```text
-SpannerAssertionError: 1 expected row(s) not found in table "Books".
+SpannerAssertionError: 1 expected row(s) not found in table "Users".
   - Expected
   + Actual
 
   Array [
     Object {
--     "JSONData": "{\"genre\":\"Fiction\",\"rating\":4.5}",
-+     "JSONData": "{\"genre\":\"NonFiction\",\"rating\":3.0}",
+-     "Name": "Alice",
++     "Name": "Invalid Name",
     },
   ]
 ```
