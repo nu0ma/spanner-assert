@@ -165,7 +165,10 @@ Create `SpannerAssertInstance` once, reuse across tests:
 // Minimal configuration (uses emulator defaults)
 const spannerAssert = createSpannerAssert({
   connection: {
-    databaseId: "test-database"
+    projectId: "your-project-id",    
+    instanceId: "your-instance-id",    
+    emulatorHost: "127.0.0.1:9010",
+    databaseId: "your-database",
   }
 });
 
