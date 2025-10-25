@@ -19,8 +19,5 @@ jobs:
         run: bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
         shell: bash
       - name: Check workflow files
-        env:
-          ACTIONLINT_PATH: ${{ steps.get_actionlint.outputs.executable }}
-        run: |
-          "${ACTIONLINT_PATH}" -color
+        run: ${{ steps.get_actionlint.outputs.executable }} -color
         shell: bash

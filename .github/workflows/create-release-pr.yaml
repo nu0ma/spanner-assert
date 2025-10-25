@@ -46,19 +46,13 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: Version bump
-        env:
-          VERSION_TYPE: ${{ github.event.inputs.version }}
         run: |
-          pnpm version "$VERSION_TYPE" --no-git-tag-version
+          pnpm version ${{ github.event.inputs.version }} --no-git-tag-version
           VERSION=$(node -p "require('./package.json').version")
           echo "VERSION=$VERSION" >> "$GITHUB_ENV"
 
       - name: Get release notes
         id: release-notes
-        env:
-          GH_TOKEN: ${{ github.token }}
-          REPOSITORY: ${{ github.repository }}
-          VERSION: ${{ env.VERSION }}
         run: |
           # Get the last tag
           LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
@@ -70,13 +64,15 @@ jobs:
           NOTES=$(gh api \
             --method POST \
             -H "Accept: application/vnd.github+json" \
-            "/repos/${REPOSITORY}/releases/generate-notes" \
-            -f "tag_name=v${VERSION}" \
+            /repos/${{ github.repository }}/releases/generate-notes \
+            -f tag_name="v${{ env.VERSION }}" \
             -f target_commitish="main" \
-            -f "previous_tag_name=${LAST_TAG}" | jq -r '.body')
+            -f previous_tag_name="${LAST_TAG}" | jq -r '.body')
 
           # Save to file to handle multiline content
           echo "$NOTES" > release-notes.md
+        env:
+          GH_TOKEN: ${{ github.token }}
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@4e1beaa7521e8b457b572c090b25bd3db56bf1c5 # v5.0.3
