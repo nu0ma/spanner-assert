@@ -5,18 +5,18 @@ import { Spanner } from "@google-cloud/spanner";
 import { createSpannerAssert } from "../../src/index.ts";
 import { seedSamples } from "../seed.ts";
 
+const projectId = "e2e-project";
+const instanceId = "e2e-instance";
+const databaseId = "e2e-database";
+const emulatorHost = "127.0.0.1:9010";
+
 const fixturesDir = "tests/e2e/fixtures";
 
 async function main(): Promise<void> {
-  const projectId = process.env.SPANNER_PROJECT ?? "e2e-project";
-  const instanceId = process.env.SPANNER_INSTANCE ?? "e2e-instance";
-  const databaseId = process.env.SPANNER_DATABASE ?? "e2e-database";
-  const emulatorHost = process.env.SPANNER_EMULATOR_HOST ?? "127.0.0.1:9010";
-
   const spanner = new Spanner({
     projectId,
     servicePath: emulatorHost.split(":")[0],
-    port: Number.parseInt(emulatorHost.split(":")[1] || "9010"),
+    port: 9010,
   });
 
   const instance = spanner.instance(instanceId);
