@@ -34,9 +34,9 @@
     "lint:fix": "eslint --cache . --fix",
     "prettier": "prettier --check 'src/**/*.{js,jsx,ts,tsx}'",
     "prettier:fix": "prettier --write 'src/**/*.{js,jsx,ts,tsx}'",
-    "test": "vitest run",
     "test:e2e": "pnpm run build && tsx tests/e2e/run.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "prepare": "husky install"
   },
   "dependencies": {
     "@google-cloud/spanner": "^8.2.2",
@@ -46,6 +46,7 @@
   "devDependencies": {
     "@eslint/js": "^9.38.0",
     "@playwright/test": "^1.56.1",
+    "@secretlint/secretlint-rule-preset-recommend": "^11.2.5",
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^24.9.1",
     "@typescript-eslint/eslint-plugin": "^8.46.2",
@@ -57,11 +58,19 @@
     "eslint-plugin-simple-import-sort": "^12.1.1",
     "eslint-plugin-testing-library": "^7.13.3",
     "eslint-plugin-unused-imports": "^4.3.0",
+    "husky": "^8.0.0",
     "jest-diff": "^30.2.0",
+    "lint-staged": "^16.2.6",
     "prettier": "^3.6.2",
+    "secretlint": "^11.2.5",
     "tsdown": "^0.15.9",
     "tsx": "^4.20.6",
     "typescript": "^5.9.3"
   },
-  "packageManager": "pnpm@10.17.0"
+  "packageManager": "pnpm@10.17.0",
+  "lint-staged": {
+    "*": [
+      "secretlint"
+    ]
+  }
 }
