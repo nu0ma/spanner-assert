@@ -8,4 +8,5 @@ export default defineConfig({
   minify: true,
   sourcemap: true,
   treeshake: true,
+  onSuccess: "sort-package-json",
 });
