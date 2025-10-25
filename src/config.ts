@@ -27,6 +27,12 @@ export function resolveConnectionConfig(
     throw new MissingConfigurationError("databaseId");
   }
 
+  if (!emulatorHost) {
+    throw new MissingConfigurationError(
+      "emulatorHost (this library only supports Cloud Spanner emulator)"
+    );
+  }
+
   return {
     projectId,
     instanceId,

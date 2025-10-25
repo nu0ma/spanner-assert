@@ -1,6 +1,8 @@
 # spanner-assert
 
-Validate Google Cloud Spanner data (emulator supported) against expectations written in YAML. Lightweight Node.js library, fast feedback loops.
+Validate Google Cloud Spanner **emulator** data against expectations written in YAML. Lightweight Node.js testing library for E2E workflows, fast feedback loops.
+
+> ⚠️ **This library only supports Cloud Spanner emulator** - designed for testing environments, not production databases.
 
 ## Install
 
@@ -10,7 +12,7 @@ npm install spanner-assert
 
 ## Quick Start
 
-1. Start the Spanner emulator (optional) and note the connection settings you want to validate against.
+1. Start the Spanner emulator and note the connection settings.
 
 2. Create an expectations YAML file:
 
@@ -54,10 +56,10 @@ import { createSpannerAssert } from "spanner-assert";
 
 const spannerAssert = createSpannerAssert({
   connection: {
-    projectId: "your-project",
-    instanceId: "your-instance",
+    projectId: "your-project-id",    
+    instanceId: "your-instance-id",    
     databaseId: "your-database",
-    emulatorHost: "127.0.0.1:9010", // optional when using the emulator
+    emulatorHost: "127.0.0.1:9010",
   },
 });
 
@@ -71,12 +73,19 @@ On success you get no output (or your own logging) because all tables matched.
 ### If not successful
 
 ```text
-SpannerAssertionError: No rows matched the expected column values in Books.
-    expected columns: { JSONData: '{"genre":"Fiction","rating":4.5}' }
-    table: Books
+SpannerAssertionError: 1 expected row(s) not found in table "Users".
+  - Expected
+  + Actual
+
+  Array [
+    Object {
+-     "Name": "Alice",
++     "Name": "Invalid Name",
+    },
+  ]
 ```
 
-An error is thrown detailing which table and columns failed to match.
+An error is thrown with a color-coded diff showing expected vs actual values (using jest-diff).
 
 ## Usage with Playwright
 
@@ -90,13 +99,12 @@ test.describe('User Registration Flow', () => {
   let spannerAssert;
 
   test.beforeAll(async () => {
-    // Initialize spanner-assert once for all tests
     spannerAssert = createSpannerAssert({
       connection: {
-        projectId: 'test-project',
-        instanceId: 'test-instance',
-        databaseId: 'test-database',
-        emulatorHost: '127.0.0.1:9010',
+        projectId: "your-project-id",    
+        instanceId: "your-instance-id",    
+        databaseId: "your-database",
+        emulatorHost: "127.0.0.1:9010",
       },
     });
   });

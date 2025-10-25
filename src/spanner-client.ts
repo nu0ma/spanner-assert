@@ -12,18 +12,15 @@ export type DatabaseHandle = {
 };
 
 export function openDatabase(config: SpannerConnectionConfig): DatabaseHandle {
+  const [host, portStr] = config.emulatorHost.split(":");
+  const port = Number.parseInt(portStr || "9010");
+
   const clientConfig: SpannerOptions = {
     projectId: config.projectId,
+    servicePath: host,
+    port: port,
+    sslCreds: undefined,
   };
-
-  // configure emulator host if provided
-  if (config.emulatorHost) {
-    clientConfig.servicePath = config.emulatorHost.split(":")[0];
-    clientConfig.port = Number.parseInt(
-      config.emulatorHost.split(":")[1] || "9010"
-    );
-    clientConfig.sslCreds = undefined;
-  }
 
   const spanner = new Spanner(clientConfig);
 

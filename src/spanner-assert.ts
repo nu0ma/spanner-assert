@@ -11,8 +11,12 @@ import type {
 export function createSpannerAssert(
   options: SpannerAssertOptions
 ): SpannerAssertInstance {
-  // setup db connection
-  const config = resolveConnectionConfig(options.connection);
+  const config = resolveConnectionConfig({
+    projectId: options.connection.projectId,
+    instanceId: options.connection.instanceId,
+    databaseId: options.connection.databaseId,
+    emulatorHost: options.connection.emulatorHost,
+  });
   const dbHandle = openDatabase(config);
 
   const assert = async (expectedFile: string): Promise<void> => {
