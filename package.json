@@ -66,7 +66,7 @@
     "eslint-plugin-simple-import-sort": "^12.1.1",
     "eslint-plugin-testing-library": "^7.13.3",
     "eslint-plugin-unused-imports": "^4.3.0",
-    "husky": "^8.0.3",
+    "husky": "^8.0.0",
     "jest-diff": "^30.2.0",
     "lint-staged": "^16.2.6",
     "prettier": "^3.6.2",
@@ -76,5 +76,5 @@
     "tsx": "^4.20.6",
     "typescript": "^5.9.3"
   },
-  "packageManager": "pnpm@10.18.3"
+  "packageManager": "pnpm@10.19.0"
 }
