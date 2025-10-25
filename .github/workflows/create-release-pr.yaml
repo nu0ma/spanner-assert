@@ -46,8 +46,10 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: Version bump
+        env:
+          VERSION_TYPE: ${{ github.event.inputs.version }}
         run: |
-          pnpm version ${{ github.event.inputs.version }} --no-git-tag-version
+          pnpm version "$VERSION_TYPE" --no-git-tag-version
           VERSION=$(node -p "require('./package.json').version")
           echo "VERSION=$VERSION" >> "$GITHUB_ENV"
 
