@@ -56,8 +56,8 @@ import { createSpannerAssert } from "spanner-assert";
 
 const spannerAssert = createSpannerAssert({
   connection: {
-    projectId: "test-project",    
-    instanceId: "test-instance",    
+    projectId: "your-project-id",    
+    instanceId: "your-instance-id",    
     databaseId: "your-database",
     emulatorHost: "127.0.0.1:9010",
   },
