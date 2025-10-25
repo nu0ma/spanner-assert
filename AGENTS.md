@@ -57,13 +57,7 @@ Returns `SpannerAssertInstance` with:
 **Connection lifecycle**: Database connection opened in factory, closed in `finally` after each `assert()` call.
 
 #### Configuration (src/config.ts)
-**Required**: `databaseId` (actual database name)
-**Defaults provided**:
-- `projectId`: "test-project" (emulator dummy value)
-- `instanceId`: "test-instance" (emulator dummy value)
-- `emulatorHost`: "127.0.0.1:9010" (emulator endpoint)
-
-Format: `"host:port"` e.g., `"127.0.0.1:9010"`
+**Required**: `projectId`, `instanceId`, `databaseId`, `emulatorHost`
 
 #### Database Client (src/spanner-client.ts)
 **Emulator-only configuration** (always applied):
