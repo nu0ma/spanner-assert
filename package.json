@@ -32,11 +32,16 @@
     "preinstall": "npx only-allow pnpm",
     "lint": "eslint --cache .",
     "lint:fix": "eslint --cache . --fix",
+    "prepare": "husky install",
     "prettier": "prettier --check 'src/**/*.{js,jsx,ts,tsx}'",
     "prettier:fix": "prettier --write 'src/**/*.{js,jsx,ts,tsx}'",
     "test:e2e": "pnpm run build && tsx tests/e2e/run.ts",
-    "typecheck": "tsc --noEmit",
-    "prepare": "husky install"
+    "typecheck": "tsc --noEmit"
+  },
+  "lint-staged": {
+    "*": [
+      "secretlint"
+    ]
   },
   "dependencies": {
     "@google-cloud/spanner": "^8.2.2",
@@ -63,14 +68,10 @@
     "lint-staged": "^16.2.6",
     "prettier": "^3.6.2",
     "secretlint": "^11.2.5",
+    "sort-package-json": "^3.4.0",
     "tsdown": "^0.15.9",
     "tsx": "^4.20.6",
     "typescript": "^5.9.3"
   },
-  "packageManager": "pnpm@10.17.0",
-  "lint-staged": {
-    "*": [
-      "secretlint"
-    ]
-  }
+  "packageManager": "pnpm@10.17.0"
 }
