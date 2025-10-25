@@ -52,8 +52,9 @@ jobs:
         id: package
         env:
           INPUT_VERSION: ${{ github.event.inputs.version }}
+          EVENT_NAME: ${{ github.event_name }}
         run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "$INPUT_VERSION" ]; then
+          if [ "$EVENT_NAME" = "workflow_dispatch" ] && [ -n "$INPUT_VERSION" ]; then
             VERSION="$INPUT_VERSION"
             # Validate version format
             if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
@@ -70,8 +71,10 @@ jobs:
 
       - name: Check if tag exists
         id: tag-check
+        env:
+          VERSION: ${{ steps.package.outputs.version }}
         run: |
-          if git rev-parse "v${{ steps.package.outputs.version }}" >/dev/null 2>&1; then
+          if git rev-parse "v${VERSION}" >/dev/null 2>&1; then
             echo "exists=true" >> "$GITHUB_OUTPUT"
           else
             echo "exists=false" >> "$GITHUB_OUTPUT"
@@ -103,65 +106,82 @@ jobs:
       - name: Create GitHub Release with tag
         id: create-release
         if: steps.tag-check.outputs.exists == 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+          EVENT_NAME: ${{ github.event_name }}
+          VERSION: ${{ steps.package.outputs.version }}
+          COMMIT_SHA: ${{ github.sha }}
         run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            RELEASE_URL=$(gh release create "v${{ steps.package.outputs.version }}" \
-              --title "v${{ steps.package.outputs.version }}" \
-              --target "${{ github.sha }}" \
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            RELEASE_URL=$(gh release create "v${VERSION}" \
+              --title "v${VERSION}" \
+              --target "${COMMIT_SHA}" \
               --generate-notes)
           else
             # Save PR body to file safely using environment variable
             printf '%s\n' "$PR_BODY" > release_notes.md
-            RELEASE_URL=$(gh release create "v${{ steps.package.outputs.version }}" \
-              --title "v${{ steps.package.outputs.version }}" \
-              --target "${{ github.sha }}" \
+            RELEASE_URL=$(gh release create "v${VERSION}" \
+              --title "v${VERSION}" \
+              --target "${COMMIT_SHA}" \
               --notes-file release_notes.md)
           fi
           echo "url=$RELEASE_URL" >> "$GITHUB_OUTPUT"
-        env:
-          GH_TOKEN: ${{ github.token }}
-          PR_BODY: ${{ github.event.pull_request.body }}
 
       - name: Comment on PR - Success
         if: |
-          always() && 
-          github.event_name == 'pull_request' && 
+          always() &&
+          github.event_name == 'pull_request' &&
           steps.tag-check.outputs.exists == 'false' &&
           success()
-        run: |
-          gh pr comment ${{ github.event.pull_request.number }} \
-            --body "✅ **Release v${{ steps.package.outputs.version }} completed successfully!**
-
-          - 📦 npm package: https://www.npmjs.com/package/${{ steps.package.outputs.name }}/v/${{ steps.package.outputs.version }}
-          - 🏷️ GitHub Release: ${{ steps.create-release.outputs.url }}
-          - 🔗 Workflow run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
         env:
           GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          VERSION: ${{ steps.package.outputs.version }}
+          PACKAGE_NAME: ${{ steps.package.outputs.name }}
+          RELEASE_URL: ${{ steps.create-release.outputs.url }}
+          SERVER_URL: ${{ github.server_url }}
+          REPOSITORY: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          gh pr comment "${PR_NUMBER}" \
+            --body "✅ **Release v${VERSION} completed successfully!**
+
+          - 📦 npm package: https://www.npmjs.com/package/${PACKAGE_NAME}/v/${VERSION}
+          - 🏷️ GitHub Release: ${RELEASE_URL}
+          - 🔗 Workflow run: ${SERVER_URL}/${REPOSITORY}/actions/runs/${RUN_ID}"
 
       - name: Comment on PR - Tag Exists
         if: |
-          always() && 
-          github.event_name == 'pull_request' && 
+          always() &&
+          github.event_name == 'pull_request' &&
           steps.tag-check.outputs.exists == 'true'
-        run: |
-          gh pr comment ${{ github.event.pull_request.number }} \
-            --body "⚠️ **Release skipped**: Tag v${{ steps.package.outputs.version }} already exists
-
-          Please check the existing release or update the version in package.json."
         env:
           GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          VERSION: ${{ steps.package.outputs.version }}
+        run: |
+          gh pr comment "${PR_NUMBER}" \
+            --body "⚠️ **Release skipped**: Tag v${VERSION} already exists
+
+          Please check the existing release or update the version in package.json."
 
       - name: Comment on PR - Failure
         if: |
-          always() && 
-          github.event_name == 'pull_request' && 
+          always() &&
+          github.event_name == 'pull_request' &&
           steps.tag-check.outputs.exists == 'false' &&
           failure()
-        run: |
-          gh pr comment ${{ github.event.pull_request.number }} \
-            --body "❌ **Release v${{ steps.package.outputs.version }} failed**
-
-          Please check the workflow logs for details.
-          🔗 Workflow run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
         env:
           GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          VERSION: ${{ steps.package.outputs.version }}
+          SERVER_URL: ${{ github.server_url }}
+          REPOSITORY: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          gh pr comment "${PR_NUMBER}" \
+            --body "❌ **Release v${VERSION} failed**
+
+          Please check the workflow logs for details.
+          🔗 Workflow run: ${SERVER_URL}/${REPOSITORY}/actions/runs/${RUN_ID}"
