@@ -21,3 +21,10 @@ CREATE TABLE Books (
   Author STRING(100) NOT NULL,
   PublishedYear INT64 NOT NULL,
 ) PRIMARY KEY (BookID);
+
+CREATE TABLE ArrayTests (
+  TestID STRING(36) NOT NULL,
+  Tags ARRAY<STRING(MAX)>,
+  Scores ARRAY<INT64>,
+  Flags ARRAY<BOOL>
+) PRIMARY KEY (TestID);

@@ -28,6 +28,9 @@ export async function seedSamples(
         sql: "DELETE FROM Books WHERE TRUE",
       },
       {
+        sql: "DELETE FROM ArrayTests WHERE TRUE",
+      },
+      {
         sql: `INSERT INTO Users (UserID, Name, Email, Status, CreatedAt)
                VALUES (@userId, @name, @email, @status, TIMESTAMP(@createdAt))`,
         params: {
@@ -79,6 +82,54 @@ export async function seedSamples(
           title: { type: "string" },
           author: { type: "string" },
           publishedYear: { type: "int64" },
+        },
+      },
+      {
+        sql: `INSERT INTO ArrayTests (TestID, Tags, Scores, Flags)
+               VALUES (@testId, @tags, @scores, @flags)`,
+        params: {
+          testId: "array-001",
+          tags: ["javascript", "typescript", "node"],
+          scores: [100, 200, 300],
+          flags: [true, false, true],
+        },
+        types: {
+          testId: { type: "string" },
+          tags: { type: "array", child: { type: "string" } },
+          scores: { type: "array", child: { type: "int64" } },
+          flags: { type: "array", child: { type: "bool" } },
+        },
+      },
+      {
+        sql: `INSERT INTO ArrayTests (TestID, Tags, Scores, Flags)
+               VALUES (@testId, @tags, @scores, @flags)`,
+        params: {
+          testId: "array-002",
+          tags: ["react", "vue"],
+          scores: [95, 87],
+          flags: [true, true],
+        },
+        types: {
+          testId: { type: "string" },
+          tags: { type: "array", child: { type: "string" } },
+          scores: { type: "array", child: { type: "int64" } },
+          flags: { type: "array", child: { type: "bool" } },
+        },
+      },
+      {
+        sql: `INSERT INTO ArrayTests (TestID, Tags, Scores, Flags)
+               VALUES (@testId, @tags, @scores, @flags)`,
+        params: {
+          testId: "array-003",
+          tags: [],
+          scores: [],
+          flags: [],
+        },
+        types: {
+          testId: { type: "string" },
+          tags: { type: "array", child: { type: "string" } },
+          scores: { type: "array", child: { type: "int64" } },
+          flags: { type: "array", child: { type: "bool" } },
         },
       },
     ]);

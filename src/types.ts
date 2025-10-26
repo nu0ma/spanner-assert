@@ -1,4 +1,4 @@
-export type ColumnValue = string | number | boolean | null;
+export type ColumnValue = string | number | boolean | null | (string | number | boolean | null)[];
 
 export type TableColumnExpectations = Record<string, ColumnValue>;
 

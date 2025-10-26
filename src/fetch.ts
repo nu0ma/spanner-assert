@@ -97,13 +97,34 @@ function rowMatches(
   for (const [column, expectedValue] of Object.entries(expected)) {
     const actualValue = actual[column];
 
-    if (expectedValue === null) {
-      if (actualValue !== null) return false;
-    } else {
-      if (actualValue !== expectedValue) return false;
+    if (!valuesMatch(expectedValue, actualValue)) {
+      return false;
     }
   }
   return true;
+}
+
+function valuesMatch(expected: unknown, actual: unknown): boolean {
+  // Handle null values
+  if (expected === null) {
+    return actual === null;
+  }
+
+  // Handle arrays (order-sensitive comparison)
+  if (Array.isArray(expected)) {
+    if (!Array.isArray(actual)) return false;
+    if (expected.length !== actual.length) return false;
+
+    for (let i = 0; i < expected.length; i++) {
+      if (!valuesMatch(expected[i], actual[i])) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  // Handle primitive values
+  return expected === actual;
 }
 
 function normalizeNumericValue(value: unknown): number {
