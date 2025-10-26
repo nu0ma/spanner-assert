@@ -47,7 +47,32 @@ Each table lists expected rows as an array. Add an optional `count` field when y
 
 ### Supported value types
 
-`spanner-assert` compares column values using only `string`, `number`, `boolean`, and `null`. For other Spanner types such as `TIMESTAMP` or `DATE`, provide the expected value as a string (for example, `"2024-01-01T00:00:00Z"`).
+`spanner-assert` compares column values using `string`, `number`, `boolean`, `null`, and **arrays** of these primitive types.
+
+**Primitive types:**
+- `string`, `number`, `boolean`, `null`
+- For Spanner types like `TIMESTAMP` or `DATE`, provide values as strings (e.g., `"2024-01-01T00:00:00Z"`)
+
+**Array types (ARRAY columns):**
+- `ARRAY<STRING>`, `ARRAY<INT64>`, `ARRAY<BOOL>` are supported
+- Arrays are compared with **order-sensitive matching** (exact element order required)
+- Empty arrays (`[]`) are supported
+
+**Array example:**
+
+```yaml
+tables:
+  Articles:
+    rows:
+      - ArticleID: "article-001"
+        Tags: ["javascript", "typescript", "node"]  # ARRAY<STRING>
+        Scores: [100, 200, 300]                     # ARRAY<INT64>
+        Flags: [true, false, true]                  # ARRAY<BOOL>
+      - ArticleID: "article-002"
+        Tags: []                                    # Empty array
+        Scores: []
+        Flags: []
+```
 
 3. Run the assertion from a script:
 
