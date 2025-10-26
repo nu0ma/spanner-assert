@@ -1,5 +1,9 @@
 # spanner-assert
 
+[![npm version](https://img.shields.io/npm/v/spanner-assert)](https://www.npmjs.com/package/spanner-assert)
+[![CI](https://github.com/nu0ma/spanner-assert/actions/workflows/ci.yaml/badge.svg)](https://github.com/nu0ma/spanner-assert/actions/workflows/ci.yaml)
+[![License](https://img.shields.io/npm/l/spanner-assert)](https://github.com/nu0ma/spanner-assert/blob/main/LICENSE)
+
 Validate Google Cloud Spanner **emulator** data against expectations written in YAML. Lightweight Node.js testing library for E2E workflows, fast feedback loops.
 
 > ⚠️ **This library only supports Cloud Spanner emulator** - designed for testing environments, not production databases.
