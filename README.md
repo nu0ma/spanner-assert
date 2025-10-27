@@ -4,7 +4,6 @@
 [![CI](https://github.com/nu0ma/spanner-assert/actions/workflows/ci.yaml/badge.svg)](https://github.com/nu0ma/spanner-assert/actions/workflows/ci.yaml)
 [![License](https://img.shields.io/npm/l/spanner-assert)](https://github.com/nu0ma/spanner-assert/blob/main/LICENSE)
 
-Validate Google Cloud Spanner **emulator** data against expectations written in YAML. Lightweight Node.js testing library for E2E workflows, fast feedback loops.
 Validate Google Cloud Spanner **emulator** data against expectations written in JSON. Lightweight Node.js testing library for E2E workflows, fast feedback loops.
 
 > ⚠️ **This library only supports Cloud Spanner emulator** - designed for testing environments, not production databases.
@@ -284,13 +283,20 @@ The algorithm processes expected rows sequentially:
 
 ### Example: Subset Matching
 
-```yaml
-# Expected (only 2 columns specified)
-tables:
-  Users:
-    rows:
-      - Email: "alice@example.com"
-        Status: 1
+```json
+// Expected (only 2 columns specified)
+{
+  "tables": {
+    "Users": {
+      "rows": [
+        {
+          "Email": "alice@example.com",
+          "Status": 1
+        }
+      ]
+    }
+  }
+}
 ```
 
 This will match a database row even if it has additional columns:
