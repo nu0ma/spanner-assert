@@ -1,4 +1,3 @@
-import { colors } from "consola/utils";
 import { diff } from "jest-diff";
 
 function formatValue(value: unknown): string {
@@ -24,8 +23,6 @@ function formatDetails(details: Record<string, unknown>): string {
     const diffResult = diff(details.expected, details.actual, {
       aAnnotation: "Expected",
       bAnnotation: "Actual",
-      aColor: colors.green,
-      bColor: colors.red,
       contextLines: 3,
       expand: false,
     });
@@ -36,10 +33,8 @@ function formatDetails(details: Record<string, unknown>): string {
     ) {
       lines.push(diffResult);
     } else {
-      lines.push(
-        `  ${colors.green("Expected:")} ${formatValue(details.expected)}`
-      );
-      lines.push(`  ${colors.red("Actual:  ")} ${formatValue(details.actual)}`);
+      lines.push(`  Expected: ${formatValue(details.expected)}`);
+      lines.push(`  Actual:  ${formatValue(details.actual)}`);
     }
 
     for (const [key, value] of Object.entries(details)) {
@@ -48,15 +43,15 @@ function formatDetails(details: Record<string, unknown>): string {
       }
     }
   } else if ("columns" in details) {
-    lines.push(`  ${colors.cyan("Expected columns:")}`);
+    lines.push(`  Expected columns:`);
     const columns = details.columns as Record<string, unknown>;
     for (const [column, value] of Object.entries(columns)) {
-      lines.push(`    ${colors.bold(column)}: ${formatValue(value)}`);
+      lines.push(`    ${column}: ${formatValue(value)}`);
     }
   } else {
     // Default formatting
     for (const [key, value] of Object.entries(details)) {
-      lines.push(`  ${colors.dim(key + ":")} ${formatValue(value)}`);
+      lines.push(`  ${key + ": "} ${formatValue(value)}`);
     }
   }
 
@@ -67,7 +62,7 @@ export class SpannerAssertionError extends Error {
   readonly details?: Record<string, unknown>;
 
   constructor(message: string, details?: Record<string, unknown>) {
-    let fullMessage = colors.red(colors.bold(message));
+    let fullMessage = message;
     if (details) {
       fullMessage += "\n" + formatDetails(details);
     }
