@@ -1,5 +1,5 @@
-import { diff } from "jest-diff";
 import { colors } from "consola/utils";
+import { diff } from "jest-diff";
 
 function formatValue(value: unknown): string {
   if (value === null) {
@@ -36,7 +36,9 @@ function formatDetails(details: Record<string, unknown>): string {
     ) {
       lines.push(diffResult);
     } else {
-      lines.push(`  ${colors.green("Expected:")} ${formatValue(details.expected)}`);
+      lines.push(
+        `  ${colors.green("Expected:")} ${formatValue(details.expected)}`
+      );
       lines.push(`  ${colors.red("Actual:  ")} ${formatValue(details.actual)}`);
     }
 
