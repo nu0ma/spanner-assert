@@ -2,6 +2,7 @@ import { Spanner } from "@google-cloud/spanner";
 
 import { createSpannerAssert } from "../../src/index.ts";
 import { seedSamples } from "../seed.ts";
+
 import expectations from "./fixtures/expectations/samples.json" with { type: "json" };
 
 const projectId = "e2e-project";
