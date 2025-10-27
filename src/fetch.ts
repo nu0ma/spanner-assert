@@ -1,4 +1,5 @@
 import type { Database } from "@google-cloud/spanner";
+import { consola } from "consola";
 
 import { SpannerAssertionError } from "./errors.ts";
 import type { ColumnValue, TableColumnExpectations } from "./types.ts";
@@ -143,6 +144,7 @@ function normalizeNumericValue(value: unknown): number {
     }
   }
 
+  consola.error("Failed to convert value to a numeric type.");
   throw new SpannerAssertionError(
     "Failed to convert value to a numeric type.",
     {
@@ -153,6 +155,7 @@ function normalizeNumericValue(value: unknown): number {
 
 export function quoteIdentifier(identifier: string): string {
   if (!IDENTIFIER_PATTERN.test(identifier)) {
+    consola.error("Identifier contains unsupported characters.");
     throw new SpannerAssertionError(
       "Identifier contains unsupported characters.",
       {

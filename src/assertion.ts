@@ -1,4 +1,5 @@
 import type { Database } from "@google-cloud/spanner";
+import { consola } from "consola";
 
 import { SpannerAssertionError } from "./errors.ts";
 import {
@@ -33,6 +34,9 @@ async function assertTable(
 
   if (expectation.rows) {
     if (expectation.rows.length === 0) {
+      consola.error(
+        `Invalid expectation: rows array cannot be empty in table "${tableName}".`
+      );
       throw new SpannerAssertionError(
         `Invalid expectation: rows array cannot be empty in table "${tableName}".`,
         { table: tableName }
@@ -43,6 +47,9 @@ async function assertTable(
       typeof expectation.count === "number" &&
       expectation.rows.length > expectation.count
     ) {
+      consola.error(
+        `Invalid expectation: specified ${expectation.rows.length} rows but count is ${expectation.count} in table "${tableName}".`
+      );
       throw new SpannerAssertionError(
         `Invalid expectation: specified ${expectation.rows.length} rows but count is ${expectation.count} in table "${tableName}".`,
         {
@@ -98,6 +105,7 @@ async function assertRowCount(
 ): Promise<void> {
   const actualCount = await fetchCount(database, quotedTableName);
   if (actualCount !== expectedCount) {
+    consola.error(`Row count mismatch in table "${tableName}".`);
     throw new SpannerAssertionError(
       `Row count mismatch in table "${tableName}".`,
       {
@@ -119,6 +127,9 @@ async function assertRows(
   const missingRows = findMissingRows(expectedRows, actualRows);
 
   if (missingRows.length > 0) {
+    consola.error(
+      `${missingRows.length} expected row(s) not found in table "${tableName}".`
+    );
     throw new SpannerAssertionError(
       `${missingRows.length} expected row(s) not found in table "${tableName}".`,
       {
