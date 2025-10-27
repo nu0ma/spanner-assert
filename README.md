@@ -5,6 +5,7 @@
 [![License](https://img.shields.io/npm/l/spanner-assert)](https://github.com/nu0ma/spanner-assert/blob/main/LICENSE)
 
 Validate Google Cloud Spanner **emulator** data against expectations written in YAML. Lightweight Node.js testing library for E2E workflows, fast feedback loops.
+Validate Google Cloud Spanner **emulator** data against expectations written in JSON. Lightweight Node.js testing library for E2E workflows, fast feedback loops.
 
 > ⚠️ **This library only supports Cloud Spanner emulator** - designed for testing environments, not production databases.
 
@@ -18,33 +19,48 @@ npm install spanner-assert
 
 1. Start the Spanner emulator and note the connection settings.
 
-2. Create an expectations YAML file:
+2. Create an expectations JSON file:
 
-```yaml
-# expectations.yaml
-tables:
-  Users:
-    rows:
-      - UserID: "user-001"
-        Name: "Alice Example"
-        Email: "alice@example.com"
-        Status: 1
-        CreatedAt: "2024-01-01T00:00:00Z"
-  Products:
-    rows:
-      - ProductID: "product-001"
-        Name: "Example Product"
-        Price: 1999
-        IsActive: true
-        CategoryID: null
-        CreatedAt: "2024-01-01T00:00:00Z"
-  Books:
-    rows:
-      - BookID: "book-001"
-        Title: "Example Book"
-        Author: "Jane Doe"
-        PublishedYear: 2024
-        JSONData: '{"genre":"Fiction","rating":4.5}'
+```json
+// expectations.json
+{
+  "tables": {
+    "Users": {
+      "rows": [
+        {
+          "UserID": "user-001",
+          "Name": "Alice Example",
+          "Email": "alice@example.com",
+          "Status": 1,
+          "CreatedAt": "2024-01-01T00:00:00Z"
+        }
+      ]
+    },
+    "Products": {
+      "rows": [
+        {
+          "ProductID": "product-001",
+          "Name": "Example Product",
+          "Price": 1999,
+          "IsActive": true,
+          "CategoryID": null,
+          "CreatedAt": "2024-01-01T00:00:00Z"
+        }
+      ]
+    },
+    "Books": {
+      "rows": [
+        {
+          "BookID": "book-001",
+          "Title": "Example Book",
+          "Author": "Jane Doe",
+          "PublishedYear": 2024,
+          "JSONData": "{\"genre\":\"Fiction\",\"rating\":4.5}"
+        }
+      ]
+    }
+  }
+}
 ```
 
 Each table lists expected rows as an array. Add an optional `count` field when you also want to assert the total number of rows returned.
@@ -64,24 +80,34 @@ Each table lists expected rows as an array. Add an optional `count` field when y
 
 **Array example:**
 
-```yaml
-tables:
-  Articles:
-    rows:
-      - ArticleID: "article-001"
-        Tags: ["javascript", "typescript", "node"]  # ARRAY<STRING>
-        Scores: [100, 200, 300]                     # ARRAY<INT64>
-        Flags: [true, false, true]                  # ARRAY<BOOL>
-      - ArticleID: "article-002"
-        Tags: []                                    # Empty array
-        Scores: []
-        Flags: []
+```json
+{
+  "tables": {
+    "Articles": {
+      "rows": [
+        {
+          "ArticleID": "article-001",
+          "Tags": ["javascript", "typescript", "node"],
+          "Scores": [100, 200, 300],
+          "Flags": [true, false, true]
+        },
+        {
+          "ArticleID": "article-002",
+          "Tags": [],
+          "Scores": [],
+          "Flags": []
+        }
+      ]
+    }
+  }
+}
 ```
 
 3. Run the assertion from a script:
 
 ```ts
 import { createSpannerAssert } from "spanner-assert";
+import expectations from "./expectations.json" with { type: "json" };
 
 const spannerAssert = createSpannerAssert({
   connection: {
@@ -94,7 +120,7 @@ const spannerAssert = createSpannerAssert({
 
 console.log(spannerAssert.getConnectionInfo()); // -> resolved connection settings
 
-await spannerAssert.assert("./expectations.yaml");
+await spannerAssert.assert(expectations);
 ```
 
 On success you get no output (or your own logging) because all tables matched.
@@ -123,6 +149,9 @@ Here's a practical example of using `spanner-assert` in Playwright E2E tests to 
 ```ts
 import { test, expect } from "@playwright/test";
 import { createSpannerAssert } from "spanner-assert";
+import userCreatedExpectations from "./test/expectations/user-created.json" with { type: "json" };
+import profileUpdatedExpectations from "./test/expectations/profile-updated.json" with { type: "json" };
+import productInventoryExpectations from "./test/expectations/product-inventory.json" with { type: "json" };
 
 test.describe("User Registration Flow", () => {
   let spannerAssert;
@@ -148,7 +177,7 @@ test.describe("User Registration Flow", () => {
     await expect(page.locator(".success-message")).toBeVisible();
 
     // 2. Validate database state with spanner-assert
-    await spannerAssert.assert("./test/expectations/user-created.yaml");
+    await spannerAssert.assert(userCreatedExpectations);
   });
 
   test("should update user profile", async ({ page }) => {
@@ -160,7 +189,7 @@ test.describe("User Registration Flow", () => {
     await expect(page.locator(".success-notification")).toBeVisible();
 
     // Verify database was updated correctly
-    await spannerAssert.assert("./test/expectations/profile-updated.yaml");
+    await spannerAssert.assert(profileUpdatedExpectations);
   });
 
   test("should create product and verify inventory", async ({ page }) => {
@@ -174,39 +203,57 @@ test.describe("User Registration Flow", () => {
     await expect(page.locator(".product-created")).toBeVisible();
 
     // Validate both Products and Inventory tables
-    await spannerAssert.assert("./test/expectations/product-inventory.yaml");
+    await spannerAssert.assert(productInventoryExpectations);
   });
 });
 ```
 
-**Example expectation file** (`test/expectations/user-created.yaml`):
+**Example expectation file** (`test/expectations/user-created.json`):
 
-```yaml
-tables:
-  Users:
-    count: 1
-    rows:
-      - Email: "alice@example.com"
-        Name: "Alice Example"
-        Status: 1
+```json
+{
+  "tables": {
+    "Users": {
+      "count": 1,
+      "rows": [
+        {
+          "Email": "alice@example.com",
+          "Name": "Alice Example",
+          "Status": 1
+        }
+      ]
+    }
+  }
+}
 ```
 
-**Example with multiple tables** (`test/expectations/product-inventory.yaml`):
+**Example with multiple tables** (`test/expectations/product-inventory.json`):
 
-```yaml
-tables:
-  Products:
-    count: 1
-    rows:
-      - Name: "Example Product"
-        Price: 1999
-        IsActive: true
-  Inventory:
-    count: 1
-    rows:
-      - ProductID: "product-001"
-        Quantity: 0
-        LastUpdated: "2024-01-01T00:00:00Z"
+```json
+{
+  "tables": {
+    "Products": {
+      "count": 1,
+      "rows": [
+        {
+          "Name": "Example Product",
+          "Price": 1999,
+          "IsActive": true
+        }
+      ]
+    },
+    "Inventory": {
+      "count": 1,
+      "rows": [
+        {
+          "ProductID": "product-001",
+          "Quantity": 0,
+          "LastUpdated": "2024-01-01T00:00:00Z"
+        }
+      ]
+    }
+  }
+}
 ```
 
 This pattern allows you to:
@@ -263,42 +310,61 @@ Actual database row:
 
 To avoid ambiguity and ensure reliable matching, **always include unique columns** (like primary keys) in your expectations:
 
-```yaml
-# ✅ Good: Specific and unambiguous
-tables:
-  Users:
-    rows:
-      - UserID: "user-001"      # Primary key ensures unique match
-        Email: "alice@example.com"
-        Status: 1
-      - UserID: "user-002"
-        Email: "bob@example.com"
-        Status: 1
+```json
+// ✅ Good: Specific and unambiguous
+{
+  "tables": {
+    "Users": {
+      "rows": [
+        {
+          "UserID": "user-001",
+          "Email": "alice@example.com",
+          "Status": 1
+        },
+        {
+          "UserID": "user-002",
+          "Email": "bob@example.com",
+          "Status": 1
+        }
+      ]
+    }
+  }
+}
 
-# ❌ Risky: Ambiguous expectations
-tables:
-  Users:
-    rows:
-      - Status: 1               # Could match any user with Status=1
-      - Status: 1               # Order-dependent, may fail unexpectedly
+// ❌ Risky: Ambiguous expectations
+{
+  "tables": {
+    "Users": {
+      "rows": [
+        { "Status": 1 },
+        { "Status": 1 }
+      ]
+    }
+  }
+}
 ```
 
 ### When Greedy Matching Can Fail
 
 Consider this scenario:
 
-```yaml
-# Actual database has 3 rows:
-# - { UserID: "A", Status: 1 }
-# - { UserID: "B", Status: 1 }
-# - { UserID: "C", Status: 2 }
+```json
+// Actual database has 3 rows:
+// - { UserID: "A", Status: 1 }
+// - { UserID: "B", Status: 1 }
+// - { UserID: "C", Status: 2 }
 
-# Expectations:
-tables:
-  Users:
-    rows:
-      - Status: 1 # ① Ambiguous - matches A or B
-      - UserID: "A" # ② Specific - needs A
+// Expectations:
+{
+  "tables": {
+    "Users": {
+      "rows": [
+        { "Status": 1 },      // ① Ambiguous - matches A or B
+        { "UserID": "A" }     // ② Specific - needs A
+      ]
+    }
+  }
+}
 ```
 
 The greedy algorithm will:
@@ -309,27 +375,43 @@ The greedy algorithm will:
 
 **Solution**: Make expectations specific:
 
-```yaml
-tables:
-  Users:
-    rows:
-      - UserID: "A" # Specific - matches only A
-        Status: 1
-      - UserID: "B" # Specific - matches only B
-        Status: 1
+```json
+{
+  "tables": {
+    "Users": {
+      "rows": [
+        {
+          "UserID": "A",
+          "Status": 1
+        },
+        {
+          "UserID": "B",
+          "Status": 1
+        }
+      ]
+    }
+  }
+}
 ```
 
 ### Combining `count` and `rows`
 
 Use both for comprehensive validation:
 
-```yaml
-tables:
-  Users:
-    count: 10 # Total row count
-    rows:
-      - UserID: "admin-001" # Verify specific admin exists
-        Role: "admin"
+```json
+{
+  "tables": {
+    "Users": {
+      "count": 10,
+      "rows": [
+        {
+          "UserID": "admin-001",
+          "Role": "admin"
+        }
+      ]
+    }
+  }
+}
 ```
 
 This ensures:

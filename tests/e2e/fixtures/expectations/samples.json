@@ -1,0 +1,61 @@
+{
+  "tables": {
+    "Users": {
+      "count": 1,
+      "rows": [
+        {
+          "UserID": "user-001",
+          "Name": "Alice Example",
+          "Email": "alice@example.com",
+          "Status": 1
+        }
+      ]
+    },
+    "Products": {
+      "count": 1,
+      "rows": [
+        {
+          "ProductID": "product-001",
+          "Name": "Example Product",
+          "Price": 1999,
+          "IsActive": true,
+          "CategoryID": null
+        }
+      ]
+    },
+    "Books": {
+      "count": 1,
+      "rows": [
+        {
+          "BookID": "book-001",
+          "Title": "Example Book",
+          "Author": "Jane Doe",
+          "PublishedYear": 2024
+        }
+      ]
+    },
+    "ArrayTests": {
+      "count": 3,
+      "rows": [
+        {
+          "TestID": "array-001",
+          "Tags": ["javascript", "typescript", "node"],
+          "Scores": [100, 200, 300],
+          "Flags": [true, false, true]
+        },
+        {
+          "TestID": "array-002",
+          "Tags": ["react", "vue"],
+          "Scores": [95, 87],
+          "Flags": [true, true]
+        },
+        {
+          "TestID": "array-003",
+          "Tags": [],
+          "Scores": [],
+          "Flags": []
+        }
+      ]
+    }
+  }
+}

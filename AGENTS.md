@@ -4,11 +4,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-`spanner-assert` is a Node.js testing library for validating Google Cloud Spanner **emulator** database state against YAML-defined expectations. It's designed exclusively for E2E testing workflows (especially with Playwright) to assert database records match expected values after UI interactions or API calls.
+`spanner-assert` is a Node.js testing library for validating Google Cloud Spanner **emulator** database state against JSON-defined expectations. It's designed exclusively for E2E testing workflows (especially with Playwright) to assert database records match expected values after UI interactions or API calls.
 
 **⚠️ Emulator-only**: This library only supports Cloud Spanner emulator, not production databases.
 
-**Core value**: Declarative YAML expectations for database assertions instead of imperative query-and-compare code.
+**Core value**: Declarative JSON expectations for database assertions instead of imperative query-and-compare code.
 
 ## Development Commands
 
@@ -38,8 +38,7 @@ The project uses [Task](https://taskfile.dev) for orchestrating emulator workflo
 
 ### Data Flow
 ```
-assert(yamlPath)
-  → loadExpectationsFromFile() - Parse YAML
+assert(expectations)
   → assertExpectations() - Iterate tables
   → assertTable() - Validate count & rows
   → fetchAllRows() / fetchCount() - Execute SQL
@@ -51,7 +50,7 @@ assert(yamlPath)
 
 #### Entry Point: `createSpannerAssert()` (src/spanner-assert.ts)
 Returns `SpannerAssertInstance` with:
-- `assert(yamlPath: string): Promise<void>` - Run assertions, throw on mismatch
+- `assert(expectations: ExpectationsFile): Promise<void>` - Run assertions, throw on mismatch
 - `getConnectionInfo(): SpannerConnectionConfig` - Get resolved connection config
 
 **Connection lifecycle**: Database connection opened in factory, closed in `finally` after each `assert()` call.
@@ -125,14 +124,14 @@ SpannerAssertionError: 1 expected row(s) not found in table "Users".
 ### Type System (src/types.ts)
 - `ColumnValue = string | number | boolean | null` - Supported primitive types
 - `TableExpectation = { count?: number; rows: TableColumnExpectations[] }`
-- Only primitives supported - TIMESTAMP/DATE must be compared as strings in YAML
+- Only primitives supported - TIMESTAMP/DATE must be compared as strings in JSON
 
 ## Testing Infrastructure
 
 ### E2E Test Pattern (tests/e2e/run.ts)
 1. Initialize Spanner client pointing to emulator
 2. Seed test data with `seedSamples(database)`
-3. Run `spannerAssert.assert(yamlPath)`
+3. Import JSON expectations and run `spannerAssert.assert(expectations)`
 4. Clean up in `finally` block
 
 ### Seed Data Best Practice (tests/seed.ts)
@@ -156,11 +155,13 @@ await database.runTransactionAsync(async (transaction) => {
 ### Playwright Integration (tests/playwright/assert.spec.ts)
 Create `SpannerAssertInstance` once, reuse across tests:
 ```typescript
+import expectations from "./expectations.json" with { type: "json" };
+
 // Minimal configuration (uses emulator defaults)
 const spannerAssert = createSpannerAssert({
   connection: {
-    projectId: "your-project-id",    
-    instanceId: "your-instance-id",    
+    projectId: "your-project-id",
+    instanceId: "your-instance-id",
     emulatorHost: "127.0.0.1:9010",
     databaseId: "your-database",
   }
@@ -171,7 +172,7 @@ test.beforeAll(async () => {
 });
 
 test("validates database", async () => {
-  await spannerAssert.assert("./expectations.yaml");
+  await spannerAssert.assert(expectations);
 });
 ```
 
@@ -197,38 +198,50 @@ Table/column names must match `/^[A-Za-z][A-Za-z0-9_]*$/`:
 - ✅ Valid: `Users`, `user_id`, `CreatedAt`
 - ❌ Invalid: `user-id`, `2Users`, `User ID`
 
-### YAML Expectation Best Practices
+### JSON Expectation Best Practices
 
 **1. Partial matching** - Only specify columns you care about:
-```yaml
-tables:
-  Users:
-    rows:
-      - Email: alice@example.com  # Validates only Email
+```json
+{
+  "tables": {
+    "Users": {
+      "rows": [
+        { "Email": "alice@example.com" }
+      ]
+    }
+  }
+}
 ```
 
 **2. Avoid TIMESTAMP comparisons**:
-```yaml
-# ❌ Brittle
-- CreatedAt: "2024-01-01T00:00:00Z"
+```json
+// ❌ Brittle
+{ "CreatedAt": "2024-01-01T00:00:00Z" }
 
-# ✅ Better - omit unpredictable columns
-- Email: alice@example.com
-  Status: 1
+// ✅ Better - omit unpredictable columns
+{
+  "Email": "alice@example.com",
+  "Status": 1
+}
 ```
 
 **3. Use count for totals, rows for specific data**:
-```yaml
-tables:
-  Users:
-    count: 10  # Total count
-    rows:
-      - Email: admin@example.com  # Specific row exists
+```json
+{
+  "tables": {
+    "Users": {
+      "count": 10,
+      "rows": [
+        { "Email": "admin@example.com" }
+      ]
+    }
+  }
+}
 ```
 
 **4. NULL handling**:
-```yaml
-- CategoryID: null  # Explicitly check NULL
+```json
+{ "CategoryID": null }
 ```
 
 ### Adding New Features
