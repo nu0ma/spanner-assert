@@ -287,7 +287,7 @@ CREATE TABLE user_sessions (...);
 
 ## CI/CD
 
-### GitHub Actions (.github/workflows/ci.yml)
+### GitHub Actions (.github/workflows/ci.yaml)
 1. Setup: pnpm/Node.js/Task
 2. Install `wrench` (Go tool for schema migration)
 3. Run: lint, typecheck, `task test:emulator`, `task test:playwright`
