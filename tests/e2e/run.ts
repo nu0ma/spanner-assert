@@ -1,16 +1,13 @@
-import path from "node:path";
-
 import { Spanner } from "@google-cloud/spanner";
 
 import { createSpannerAssert } from "../../src/index.ts";
 import { seedSamples } from "../seed.ts";
+import expectations from "./fixtures/expectations/samples.json" with { type: "json" };
 
 const projectId = "e2e-project";
 const instanceId = "e2e-instance";
 const databaseId = "e2e-database";
 const emulatorHost = "127.0.0.1:9010";
-
-const fixturesDir = "tests/e2e/fixtures";
 
 async function main(): Promise<void> {
   const spanner = new Spanner({
@@ -36,9 +33,7 @@ async function main(): Promise<void> {
     await seedSamples(database);
 
     console.log("Running expectation assertions...");
-    await spannerAssert.assert(
-      path.join(fixturesDir, "expectations", "samples.yaml")
-    );
+    await spannerAssert.assert(expectations);
 
     console.log("✅ All assertions passed!");
   } catch (error) {

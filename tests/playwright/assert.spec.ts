@@ -3,6 +3,7 @@ import { test } from "@playwright/test";
 import { createSpannerAssert } from "../../src/spanner-assert.ts";
 import { SpannerAssertInstance } from "../../src/types.ts";
 import { seed } from "../seed.ts";
+import expectations from "../e2e/fixtures/expectations/samples.json" with { type: "json" };
 
 // Create spanner-assert instance
 const spannerAssert: SpannerAssertInstance = createSpannerAssert({
@@ -21,8 +22,6 @@ test.describe("spanner-assert with Playwright", () => {
   });
 
   test("seeds are present in the emulator", async () => {
-    await spannerAssert.assert(
-      "./tests/e2e/fixtures/expectations/samples.yaml"
-    );
+    await spannerAssert.assert(expectations);
   });
 });
