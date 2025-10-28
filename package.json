@@ -14,7 +14,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/nu0ma/spanner-assert.git"
+    "url": "git+https://github.com/nu0ma/spanner-assert.git"
   },
   "license": "MIT",
   "author": "nu0ma",
