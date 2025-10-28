@@ -4,10 +4,77 @@
 [![CI](https://github.com/nu0ma/spanner-assert/actions/workflows/ci.yaml/badge.svg)](https://github.com/nu0ma/spanner-assert/actions/workflows/ci.yaml)
 [![License](https://img.shields.io/npm/l/spanner-assert)](https://github.com/nu0ma/spanner-assert/blob/main/LICENSE)
 
-Validate Google Cloud Spanner **emulator** data against expectations written in YAML. Lightweight Node.js testing library for E2E workflows, fast feedback loops.
 Validate Google Cloud Spanner **emulator** data against expectations written in JSON. Lightweight Node.js testing library for E2E workflows, fast feedback loops.
 
 > ⚠️ **This library only supports Cloud Spanner emulator** - designed for testing environments, not production databases.
+
+## Why spanner-assert?
+
+While there are many database testing tools available for Node.js, `spanner-assert` fills a unique gap in the testing ecosystem:
+
+### No Spanner-specific testing libraries exist
+
+Our research found no dedicated testing or assertion libraries for Cloud Spanner in the npm ecosystem. The only available option is the official [@google-cloud/spanner](https://www.npmjs.com/package/@google-cloud/spanner) client library, which requires writing imperative query-and-compare code for every test assertion.
+
+### Declarative approach reduces test maintenance
+
+Unlike traditional database testing approaches that require imperative code:
+
+```ts
+// Traditional approach - imperative and verbose
+const [rows] = await database.run({
+  sql: 'SELECT * FROM Users WHERE Email = @email',
+  params: { email: 'alice@example.com' }
+});
+expect(rows.length).toBe(1);
+expect(rows[0].Name).toBe('Alice Example');
+expect(rows[0].Status).toBe(1);
+// Repeat for every table and column...
+```
+
+`spanner-assert` lets you define expectations declaratively in JSON:
+
+```json
+{
+  "tables": {
+    "Users": {
+      "rows": [
+        {
+          "Email": "alice@example.com",
+          "Name": "Alice Example",
+          "Status": 1
+        }
+      ]
+    }
+  }
+}
+```
+
+This approach:
+- **Reduces boilerplate**: No repetitive query-and-compare code
+- **Version-controlled expectations**: JSON files track what your database should look like
+- **Clear test intent**: Expectations are readable by non-developers
+- **Fast feedback**: Visual diffs using jest-diff show exactly what changed
+
+### Comparison with related tools
+
+| Tool | Focus | Approach | Spanner Support |
+|------|-------|----------|-----------------|
+| **spanner-assert** | Spanner emulator E2E testing | Declarative JSON expectations | ✅ Exclusive |
+| [@google-cloud/spanner](https://www.npmjs.com/package/@google-cloud/spanner) | Spanner client library | Imperative queries | ✅ Yes |
+| [declarative-e2e-test](https://github.com/marc-ed-raffalli/declarative-e2e-test) | REST API testing | Declarative JSON tests | ❌ API only |
+| [@databases/mysql-test](https://www.atdatabases.org/docs/mysql-test) | MySQL testing | Docker-based test environment | ❌ MySQL only |
+| [testcontainers](https://www.npmjs.com/search?q=testcontainers) | Multi-database testing | Docker container management | ❌ PostgreSQL/MongoDB/etc |
+| [node-mongodb-fixtures](https://www.npmjs.com/package/node-mongodb-fixtures) | MongoDB fixture management | JSON fixtures for seeding | ❌ MongoDB only |
+
+### Built for E2E workflows
+
+`spanner-assert` is specifically designed for end-to-end testing scenarios where you:
+1. Perform UI actions or API calls (e.g., in Playwright tests)
+2. Need to verify the database state changed correctly
+3. Want fast, reliable assertions without complex query logic
+
+If you're building applications with Cloud Spanner and need to validate database state in your E2E tests, `spanner-assert` provides a focused, ergonomic solution that doesn't exist elsewhere in the ecosystem.
 
 ## Install
 
