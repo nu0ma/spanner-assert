@@ -21,7 +21,6 @@ npm install spanner-assert
 2. Create an expectations JSON file:
 
 ```json
-// expectations.json
 {
   "tables": {
     "Users": {
@@ -62,45 +61,8 @@ npm install spanner-assert
 }
 ```
 
-Each table lists expected rows as an array. Add an optional `count` field when you also want to assert the total number of rows returned.
-
-### Supported value types
-
-`spanner-assert` compares column values using `string`, `number`, `boolean`, `null`, and **arrays** of these primitive types.
-
-**Primitive types:**
-- `string`, `number`, `boolean`, `null`
-- For Spanner types like `TIMESTAMP` or `DATE`, provide values as strings (e.g., `"2024-01-01T00:00:00Z"`)
-
-**Array types (ARRAY columns):**
-- `ARRAY<STRING>`, `ARRAY<INT64>`, `ARRAY<BOOL>` are supported
-- Arrays are compared with **order-sensitive matching** (exact element order required)
-- Empty arrays (`[]`) are supported
-
-**Array example:**
-
-```json
-{
-  "tables": {
-    "Articles": {
-      "rows": [
-        {
-          "ArticleID": "article-001",
-          "Tags": ["javascript", "typescript", "node"],
-          "Scores": [100, 200, 300],
-          "Flags": [true, false, true]
-        },
-        {
-          "ArticleID": "article-002",
-          "Tags": [],
-          "Scores": [],
-          "Flags": []
-        }
-      ]
-    }
-  }
-}
-```
+Each table lists expected rows as an array.
+Add an optional `count` field when you also want to assert the total number of rows returned.
 
 3. Run the assertion from a script:
 
@@ -116,8 +78,6 @@ const spannerAssert = createSpannerAssert({
     emulatorHost: "127.0.0.1:9010",
   },
 });
-
-console.log(spannerAssert.getConnectionInfo()); // -> resolved connection settings
 
 await spannerAssert.assert(expectations);
 ```
@@ -141,7 +101,7 @@ SpannerAssertionError: 1 expected row(s) not found in table "Users".
 
 An error is thrown with a color-coded diff showing expected vs actual values (using jest-diff).
 
-## Usage with Playwright
+## Example using Playwright
 
 Here's a practical example of using `spanner-assert` in Playwright E2E tests to validate database state after user interactions:
 
@@ -262,6 +222,46 @@ This pattern allows you to:
 - Catch data integrity issues early in the development cycle
 - Keep test expectations readable and version-controlled
 
+### Supported value types
+
+`spanner-assert` compares column values using `string`, `number`, `boolean`, `null`, and **arrays** of these primitive types.
+
+**Primitive types:**
+
+- `string`, `number`, `boolean`, `null`
+- For Spanner types like `TIMESTAMP` or `DATE`, provide values as strings (e.g., `"2024-01-01T00:00:00Z"`)
+
+**Array types (ARRAY columns):**
+
+- `ARRAY<STRING>`, `ARRAY<INT64>`, `ARRAY<BOOL>` are supported
+- Arrays are compared with **order-sensitive matching** (exact element order required)
+- Empty arrays (`[]`) are supported
+
+**Array example:**
+
+```json
+{
+  "tables": {
+    "Articles": {
+      "rows": [
+        {
+          "ArticleID": "article-001",
+          "Tags": ["javascript", "typescript", "node"],
+          "Scores": [100, 200, 300],
+          "Flags": [true, false, true]
+        },
+        {
+          "ArticleID": "article-002",
+          "Tags": [],
+          "Scores": [],
+          "Flags": []
+        }
+      ]
+    }
+  }
+}
+```
+
 ## Row Matching Algorithm
 
 `spanner-assert` uses a **greedy matching algorithm** to compare expected rows against actual database rows. Understanding this behavior helps you write effective test expectations.
@@ -365,8 +365,8 @@ Consider this scenario:
   "tables": {
     "Users": {
       "rows": [
-        { "Status": 1 },      // ① Ambiguous - matches A or B
-        { "UserID": "A" }     // ② Specific - needs A
+        { "Status": 1 }, // ① Ambiguous - matches A or B
+        { "UserID": "A" } // ② Specific - needs A
       ]
     }
   }
