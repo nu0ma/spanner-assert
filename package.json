@@ -14,15 +14,15 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/nu0ma/spanner-assert.git"
+    "url": "git+https://github.com/nu0ma/spanner-assert.git"
   },
   "license": "MIT",
   "author": "nu0ma",
   "type": "module",
   "exports": {
     ".": {
-      "default": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
     }
   },
   "main": "dist/index.js",
@@ -68,6 +68,7 @@
     "jest-diff": "^30.2.0",
     "lint-staged": "^16.2.6",
     "prettier": "^3.6.2",
+    "publint": "^0.3.15",
     "secretlint": "^11.2.5",
     "sort-package-json": "^3.4.0",
     "tsdown": "^0.15.9",
