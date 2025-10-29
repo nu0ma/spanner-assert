@@ -39,6 +39,7 @@
     "prettier": "prettier --check 'src/**/*.{js,jsx,ts,tsx}'",
     "prettier:fix": "prettier --write 'src/**/*.{js,jsx,ts,tsx}'",
     "test:e2e": "pnpm run build && tsx tests/e2e/run.ts",
+    "test:e2e:reset": "pnpm run build && tsx tests/e2e/reset.test.ts",
     "typecheck": "tsc --noEmit"
   },
   "lint-staged": {

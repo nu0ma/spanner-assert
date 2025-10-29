@@ -1,5 +1,7 @@
 import { Spanner } from "@google-cloud/spanner";
 
+import { resetDatabase } from "../src/reset.ts";
+
 export async function seed() {
   const spanner = new Spanner({
     projectId: "e2e-project",
@@ -14,22 +16,13 @@ export async function seed() {
 export async function seedSamples(
   database: import("@google-cloud/spanner").Database
 ): Promise<void> {
+  // Reset all tables first
+  await resetDatabase(database, ["Users", "Products", "Books", "ArrayTests"]);
+
   const createdAt = new Date("2024-01-01T00:00:00Z").toISOString();
 
   await database.runTransactionAsync(async (transaction) => {
     await transaction.batchUpdate([
-      {
-        sql: "DELETE FROM Users WHERE TRUE",
-      },
-      {
-        sql: "DELETE FROM Products WHERE TRUE",
-      },
-      {
-        sql: "DELETE FROM Books WHERE TRUE",
-      },
-      {
-        sql: "DELETE FROM ArrayTests WHERE TRUE",
-      },
       {
         sql: `INSERT INTO Users (UserID, Name, Email, Status, CreatedAt)
                VALUES (@userId, @name, @email, @status, TIMESTAMP(@createdAt))`,

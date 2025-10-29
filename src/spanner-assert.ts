@@ -1,5 +1,6 @@
 import { assertExpectations } from "./assertion.ts";
 import { resolveConnectionConfig } from "./config.ts";
+import { resetDatabase } from "./reset.ts";
 import { openDatabase } from "./spanner-client.ts";
 import type {
   SpannerConnectionConfig,
@@ -17,11 +18,20 @@ export function createSpannerAssert(
     databaseId: options.connection.databaseId,
     emulatorHost: options.connection.emulatorHost,
   });
-  const dbHandle = openDatabase(config);
 
   const assert = async (expectations: ExpectationsFile): Promise<void> => {
+    const dbHandle = openDatabase(config);
     try {
       await assertExpectations(dbHandle.database, expectations);
+    } finally {
+      await dbHandle.close();
+    }
+  };
+
+  const reset = async (tableNames: string[]): Promise<void> => {
+    const dbHandle = openDatabase(config);
+    try {
+      await resetDatabase(dbHandle.database, tableNames);
     } finally {
       await dbHandle.close();
     }
@@ -33,6 +43,7 @@ export function createSpannerAssert(
 
   return {
     assert,
+    reset,
     getConnectionInfo,
   };
 }

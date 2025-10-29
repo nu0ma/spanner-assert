@@ -101,6 +101,85 @@ SpannerAssertionError: 1 expected row(s) not found in table "Users".
 
 An error is thrown with a color-coded diff showing expected vs actual values (using jest-diff).
 
+## Resetting Database Data
+
+`spanner-assert` provides a `reset()` method to delete all data from specified tables. This is useful for cleaning up test data between test runs.
+
+### Using the Instance Method
+
+```ts
+import { createSpannerAssert } from "spanner-assert";
+
+const spannerAssert = createSpannerAssert({
+  connection: {
+    projectId: "your-project-id",
+    instanceId: "your-instance-id",
+    databaseId: "your-database",
+    emulatorHost: "127.0.0.1:9010",
+  },
+});
+
+// Reset specific tables
+await spannerAssert.reset(["Users", "Products", "Orders"]);
+```
+
+### Using the Standalone Function
+
+```ts
+import { Spanner } from "@google-cloud/spanner";
+import { resetDatabase } from "spanner-assert";
+
+const spanner = new Spanner({
+  projectId: "your-project-id",
+  servicePath: "127.0.0.1",
+  port: 9010,
+});
+
+const database = spanner.instance("your-instance-id").database("your-database");
+
+// Reset tables directly
+await resetDatabase(database, ["Users", "Products"]);
+```
+
+### Integration with Task Runner
+
+If you're using the [Task](https://taskfile.dev) runner with the Spanner emulator, you can add a reset task to your `Taskfile.yml`:
+
+```yaml
+emulator:reset:
+  desc: Reset all data in the Spanner emulator tables
+  deps:
+    - build
+  cmds:
+    - |
+      SPANNER_EMULATOR_HOST=127.0.0.1:9010 pnpm exec tsx -e "
+      import { createSpannerAssert } from './dist/index.js';
+      const spannerAssert = createSpannerAssert({
+        connection: {
+          projectId: 'e2e-project',
+          instanceId: 'e2e-instance',
+          databaseId: 'e2e-database',
+          emulatorHost: '127.0.0.1:9010'
+        }
+      });
+      await spannerAssert.reset(['Users', 'Products', 'Books']);
+      console.log('Database reset completed');
+      "
+```
+
+Then run:
+
+```bash
+task emulator:reset
+```
+
+**Notes:**
+
+- Table names must match `/^[A-Za-z][A-Za-z0-9_]*$/` (alphanumeric and underscores only)
+- All DELETE operations are executed in a single transaction for atomicity
+- Foreign key constraint ordering is the caller's responsibility
+- The reset operation uses `DELETE FROM table WHERE TRUE` internally
+
 ## Example using Playwright
 
 Here's a practical example of using `spanner-assert` in Playwright E2E tests to validate database state after user interactions:

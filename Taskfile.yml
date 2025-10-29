@@ -78,6 +78,26 @@ tasks:
         SPANNER_EMULATOR_HOST={{.EMULATOR_HOST}} \
         wrench create --database={{.DATABASE}} --directory=$tmp --schema_file=schema.sql || true'
 
+  emulator:reset:
+    desc: Reset all data in the Spanner emulator tables
+    deps:
+      - build
+    cmds:
+      - |
+        SPANNER_EMULATOR_HOST={{.EMULATOR_HOST}} pnpm exec tsx -e "
+        import { createSpannerAssert } from './dist/index.js';
+        const spannerAssert = createSpannerAssert({
+          connection: {
+            projectId: '{{.PROJECT}}',
+            instanceId: '{{.INSTANCE}}',
+            databaseId: '{{.DATABASE}}',
+            emulatorHost: '{{.EMULATOR_HOST}}'
+          }
+        });
+        await spannerAssert.reset(['Users', 'Products', 'Books', 'ArrayTests']);
+        console.log('Database reset completed successfully');
+        "
+
   test:emulator:
     desc: Run e2e tests against the Spanner emulator
     deps:
@@ -89,6 +109,18 @@ tasks:
         trap 'task emulator:down >/dev/null 2>&1 || true' EXIT
         task emulator:setup
         pnpm run test:e2e
+
+  test:emulator:reset:
+    desc: Run reset E2E tests against the Spanner emulator
+    deps:
+      - build
+    cmds:
+      - |
+        set -euo pipefail
+        task emulator:up
+        trap 'task emulator:down >/dev/null 2>&1 || true' EXIT
+        task emulator:setup
+        pnpm run test:e2e:reset
 
   test:playwright:
     desc: Run Playwright tests against the Spanner emulator
