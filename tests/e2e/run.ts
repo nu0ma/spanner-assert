@@ -43,6 +43,7 @@ async function main(): Promise<void> {
     throw error;
   } finally {
     console.log("Closing client resources...");
+    await spannerAssert.close();
     await database.close();
     spanner.close();
   }

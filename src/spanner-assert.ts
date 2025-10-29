@@ -20,11 +20,11 @@ export function createSpannerAssert(
   const dbHandle = openDatabase(config);
 
   const assert = async (expectations: ExpectationsFile): Promise<void> => {
-    try {
-      await assertExpectations(dbHandle.database, expectations);
-    } finally {
-      await dbHandle.close();
-    }
+    await assertExpectations(dbHandle.database, expectations);
+  };
+
+  const close = async (): Promise<void> => {
+    await dbHandle.close();
   };
 
   const getConnectionInfo = (): SpannerConnectionConfig => ({
@@ -33,6 +33,7 @@ export function createSpannerAssert(
 
   return {
     assert,
+    close,
     getConnectionInfo,
   };
 }

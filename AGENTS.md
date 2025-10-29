@@ -51,9 +51,10 @@ assert(expectations)
 #### Entry Point: `createSpannerAssert()` (src/spanner-assert.ts)
 Returns `SpannerAssertInstance` with:
 - `assert(expectations: ExpectationsFile): Promise<void>` - Run assertions, throw on mismatch
+- `close(): Promise<void>` - Close database connection and cleanup resources
 - `getConnectionInfo(): SpannerConnectionConfig` - Get resolved connection config
 
-**Connection lifecycle**: Database connection opened in factory, closed in `finally` after each `assert()` call.
+**Connection lifecycle**: Database connection opened in factory, reusable across multiple `assert()` calls. Must call `close()` explicitly when done.
 
 #### Configuration (src/config.ts)
 **Required**: `projectId`, `instanceId`, `databaseId`, `emulatorHost`
@@ -171,8 +172,17 @@ test.beforeAll(async () => {
   await seed();  // Setup once
 });
 
+test.afterAll(async () => {
+  await spannerAssert.close();  // Cleanup
+});
+
 test("validates database", async () => {
   await spannerAssert.assert(expectations);
+});
+
+// Multiple assertions in same suite - reuses connection
+test("validates another expectation", async () => {
+  await spannerAssert.assert(anotherExpectations);
 });
 ```
 
@@ -307,7 +317,7 @@ const params = { status: userInput };  // Safe
 ```
 
 ### Connection Pooling
-**Not used** - Each assertion creates new client. Intentional for test isolation but inefficient for high-volume usage.
+**Session reuse enabled** - Single client instance can execute multiple assertions. Connection persists until explicit `close()` call. Leverages Spanner's internal session pooling for better performance.
 
 ### Greedy Row Matching
 First expected row consumes first matching actual row. Use specific columns to avoid ambiguity when expectations overlap.
