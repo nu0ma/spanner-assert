@@ -30,7 +30,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@2028fbc5c25fe9cf00d9f06a71cc4710d4507903 # v6.0.0
         with:
-          node-version: '${{ matrix.node-version }}'
+          node-version: "${{ matrix.node-version }}"
           cache: pnpm
 
       - name: Install dependencies
@@ -53,6 +53,6 @@ jobs:
 
       - name: Run emulator e2e tests
         run: task test:emulator
-      
+
       - name: Run playwright tests
         run: task test:playwright
