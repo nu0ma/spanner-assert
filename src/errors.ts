@@ -1,5 +1,7 @@
 import { diff } from "jest-diff";
 
+import { DIFF_CONTEXT_LINES, JSON_INDENT_SPACES } from "./constants.ts";
+
 function formatValue(value: unknown): string {
   if (value === null) {
     return "null";
@@ -11,7 +13,7 @@ function formatValue(value: unknown): string {
     return `"${value}"`;
   }
   if (typeof value === "object") {
-    return JSON.stringify(value, null, 2);
+    return JSON.stringify(value, null, JSON_INDENT_SPACES);
   }
   return String(value);
 }
@@ -23,7 +25,7 @@ function formatDetails(details: Record<string, unknown>): string {
     const diffResult = diff(details.expected, details.actual, {
       aAnnotation: "Expected",
       bAnnotation: "Actual",
-      contextLines: 3,
+      contextLines: DIFF_CONTEXT_LINES,
       expand: false,
     });
 

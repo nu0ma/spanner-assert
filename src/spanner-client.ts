@@ -4,6 +4,7 @@ import {
   Spanner,
 } from "@google-cloud/spanner";
 
+import { DEFAULT_EMULATOR_PORT } from "./constants.ts";
 import type { SpannerConnectionConfig } from "./types.ts";
 
 export type DatabaseHandle = {
@@ -13,7 +14,7 @@ export type DatabaseHandle = {
 
 export function openDatabase(config: SpannerConnectionConfig): DatabaseHandle {
   const [host, portStr] = config.emulatorHost.split(":");
-  const port = Number.parseInt(portStr || "9010");
+  const port = Number.parseInt(portStr || String(DEFAULT_EMULATOR_PORT));
 
   const clientConfig: SpannerOptions = {
     projectId: config.projectId,
