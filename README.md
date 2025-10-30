@@ -11,7 +11,7 @@ Validate Google Cloud Spanner **emulator** data against expectations written in 
 ## Install
 
 ```bash
-pnpm install --dev spanner-assert
+npm install -D spanner-assert
 ```
 
 ## Quick Start
