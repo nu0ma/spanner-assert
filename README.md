@@ -126,6 +126,10 @@ test.describe("User Registration Flow", () => {
     });
   });
 
+  test.afterAll(async () => {
+    await spannerAssert.close();
+  });
+
   test("should create user record after registration", async ({ page }) => {
     // 1. Perform UI actions
     await page.goto("https://your-app.com/register");
@@ -260,6 +264,34 @@ This pattern allows you to:
     }
   }
 }
+```
+
+## Connection Management
+
+The `SpannerAssertInstance` returned by `createSpannerAssert()` maintains a persistent database connection that can be reused across multiple assertions.
+
+**Important**: Always call `close()` when you're done to properly release database resources and prevent connection leaks.
+
+When running multiple assertions in test suites, create the instance once and close it after all tests:
+
+```ts
+let spannerAssert;
+
+test.beforeAll(async () => {
+  spannerAssert = createSpannerAssert({ connection: {...} });
+});
+
+test.afterAll(async () => {
+  await spannerAssert.close();
+});
+
+test("first assertion", async () => {
+  await spannerAssert.assert(expectations1);
+});
+
+test("second assertion", async () => {
+  await spannerAssert.assert(expectations2);
+});
 ```
 
 ## Row Matching Algorithm
