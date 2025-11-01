@@ -5,13 +5,15 @@ import { SpannerAssertInstance } from "../../src/types.ts";
 import expectations from "../e2e/fixtures/expectations/samples.json" with { type: "json" };
 import { seed } from "../seed.ts";
 
+import { config } from "./config.ts";
+
 // Create spanner-assert instance
 const spannerAssert: SpannerAssertInstance = createSpannerAssert({
   connection: {
-    projectId: "e2e-project",
-    instanceId: "e2e-instance",
-    databaseId: "e2e-database",
-    emulatorHost: "127.0.0.1:9010",
+    projectId: config.projectID,
+    instanceId: config.instanceID,
+    databaseId: config.databaseID,
+    emulatorHost: config.emulatorHost,
   },
 });
 

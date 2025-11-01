@@ -1,13 +1,15 @@
 import { Spanner } from "@google-cloud/spanner";
 
+import { config } from "./playwright/config.ts";
+
 export async function seed() {
   const spanner = new Spanner({
-    projectId: "e2e-project",
-    servicePath: "127.0.0.1",
+    projectId: config.projectID,
+    servicePath: config.emulatorHost.split(":")[0],
     port: 9010,
   });
-  const instance = spanner.instance("e2e-instance");
-  const database = instance.database("e2e-database");
+  const instance = spanner.instance(config.instanceID);
+  const database = instance.database(config.databaseID);
   await seedSamples(database);
 }
 
