@@ -11,9 +11,11 @@ export type DatabaseHandle = {
   close(): Promise<void>;
 };
 
+const DEFAULT_EMULATOR_PORT = 9010;
+
 export function openDatabase(config: SpannerConnectionConfig): DatabaseHandle {
   const [host, portStr] = config.emulatorHost.split(":");
-  const port = Number.parseInt(portStr || "9010");
+  const port = Number.parseInt(portStr || DEFAULT_EMULATOR_PORT.toString());
 
   const clientConfig: SpannerOptions = {
     projectId: config.projectId,

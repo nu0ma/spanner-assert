@@ -78,3 +78,10 @@ export class InvalidExpectationFileError extends Error {
     this.name = "InvalidExpectationFileError";
   }
 }
+
+export class MissingConfigurationError extends Error {
+  constructor(field: string) {
+    super(`Spanner connection setting ${field} is not provided.`);
+    this.name = "MissingConfigurationError";
+  }
+}

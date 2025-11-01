@@ -1,31 +1,27 @@
 import { Spanner } from "@google-cloud/spanner";
 
 import { createSpannerAssert } from "../../src/index.ts";
+import { config } from "../playwright/config.ts";
 import { seedSamples } from "../seed.ts";
 
 import expectations from "./fixtures/expectations/samples.json" with { type: "json" };
 
-const projectId = "e2e-project";
-const instanceId = "e2e-instance";
-const databaseId = "e2e-database";
-const emulatorHost = "127.0.0.1:9010";
-
 async function main(): Promise<void> {
   const spanner = new Spanner({
-    projectId,
-    servicePath: emulatorHost.split(":")[0],
-    port: 9010,
+    projectId: config.projectID,
+    servicePath: config.emulatorHost.split(":")[0],
+    port: Number.parseInt(config.emulatorHost.split(":")[1]),
   });
 
-  const instance = spanner.instance(instanceId);
-  const database = instance.database(databaseId);
+  const instance = spanner.instance(config.instanceID);
+  const database = instance.database(config.databaseID);
 
   const spannerAssert = createSpannerAssert({
     connection: {
-      projectId,
-      instanceId,
-      databaseId,
-      emulatorHost,
+      projectId: config.projectID,
+      instanceId: config.instanceID,
+      databaseId: config.databaseID,
+      emulatorHost: config.emulatorHost,
     },
   });
 

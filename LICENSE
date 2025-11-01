@@ -19,3 +19,25 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+## Third-party components
+
+This software includes components licensed under the Apache License, Version 2.0:
+
+- @google-cloud/spanner (https://github.com/googleapis/nodejs-spanner)
+  Copyright (c) Google Inc.
+  Licensed under the Apache License, Version 2.0
+  http://www.apache.org/licenses/LICENSE-2.0
+
+- @playwright/test (https://github.com/microsoft/playwright)
+  Copyright (c) Microsoft Corporation
+  Licensed under the Apache License, Version 2.0
+  http://www.apache.org/licenses/LICENSE-2.0
+
+- TypeScript (https://github.com/microsoft/TypeScript)
+  Copyright (c) Microsoft Corporation
+  Licensed under the Apache License, Version 2.0
+  http://www.apache.org/licenses/LICENSE-2.0
+
+If a NOTICE file is present in these dependencies (e.g., @playwright/test),
+its contents are also included or referenced in this distribution.
