@@ -1,11 +1,5 @@
+import { MissingConfigurationError } from "./errors.ts";
 import type { SpannerConnectionConfig } from "./types.ts";
-
-export class MissingConfigurationError extends Error {
-  constructor(field: string) {
-    super(`Spanner connection setting ${field} is not provided.`);
-    this.name = "MissingConfigurationError";
-  }
-}
 
 /**
  * Resolve Cloud Spanner connection settings from explicit configuration.
