@@ -11,17 +11,13 @@ export type DatabaseHandle = {
   close(): Promise<void>;
 };
 
-const DEFAULT_EMULATOR_PORT = 9010;
-
 export function openDatabase(config: SpannerConnectionConfig): DatabaseHandle {
-  const [host, portStr] = config.emulatorHost.split(":");
-  const port = Number.parseInt(portStr || DEFAULT_EMULATOR_PORT.toString());
+  // Set SPANNER_EMULATOR_HOST environment variable for the client library
+  // This ensures the library uses emulator-specific configuration (no SSL)
+  process.env.SPANNER_EMULATOR_HOST = config.emulatorHost;
 
   const clientConfig: SpannerOptions = {
     projectId: config.projectId,
-    servicePath: host,
-    port: port,
-    sslCreds: undefined,
   };
 
   const spanner = new Spanner(clientConfig);
