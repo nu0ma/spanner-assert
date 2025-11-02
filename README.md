@@ -126,10 +126,6 @@ test.describe("User Registration Flow", () => {
     });
   });
 
-  test.afterAll(async () => {
-    await spannerAssert.close();
-  });
-
   test("should create user record after registration", async ({ page }) => {
     // 1. Perform UI actions
     await page.goto("https://your-app.com/register");
@@ -268,23 +264,25 @@ This pattern allows you to:
 
 ## Connection Management
 
-The `SpannerAssertInstance` returned by `createSpannerAssert()` maintains a persistent database connection that can be reused across multiple assertions.
+Each `assert()` call automatically manages its own database connection lifecycle:
 
-**Important**: Always call `close()` when you're done to properly release database resources and prevent connection leaks.
+- **Auto-creation**: A fresh connection is created when you call `assert()`
+- **Auto-cleanup**: The connection is automatically closed when the assertion completes
+- **No manual management**: No need to call `close()` or manage connection lifecycle
 
-When running multiple assertions in test suites, create the instance once and close it after all tests:
+This design keeps the API simple and prevents connection leak issues. You can call `assert()` multiple times without worrying about resource management:
 
 ```ts
-let spannerAssert;
-
-test.beforeAll(async () => {
-  spannerAssert = createSpannerAssert({ connection: {...} });
+const spannerAssert = createSpannerAssert({
+  connection: {
+    projectId: "your-project-id",
+    instanceId: "your-instance-id",
+    databaseId: "your-database",
+    emulatorHost: "127.0.0.1:9010",
+  }
 });
 
-test.afterAll(async () => {
-  await spannerAssert.close();
-});
-
+// Each call creates and closes its own connection
 test("first assertion", async () => {
   await spannerAssert.assert(expectations1);
 });

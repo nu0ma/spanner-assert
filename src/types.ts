@@ -24,6 +24,5 @@ export type SpannerAssertOptions = {
 
 export type SpannerAssertInstance = {
   assert(expectations: ExpectationsFile): Promise<void>;
-  close(): Promise<void>;
   getConnectionInfo(): SpannerConnectionConfig;
 };
