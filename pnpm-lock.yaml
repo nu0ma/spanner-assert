@@ -76,7 +76,7 @@ importers:
         specifier: ^3.4.0
         version: 3.4.0
       tsdown:
-        specifier: ^0.15.9
+        specifier: ^0.15.10
         version: 0.15.10(publint@0.3.15)(typescript@5.9.3)
       tsx:
         specifier: ^4.20.6
