@@ -51,10 +51,9 @@ assert(expectations)
 #### Entry Point: `createSpannerAssert()` (src/spanner-assert.ts)
 Returns `SpannerAssertInstance` with:
 - `assert(expectations: ExpectationsFile): Promise<void>` - Run assertions, throw on mismatch
-- `close(): Promise<void>` - Close database connection and cleanup resources
 - `getConnectionInfo(): SpannerConnectionConfig` - Get resolved connection config
 
-**Connection lifecycle**: Database connection opened in factory, reusable across multiple `assert()` calls. Must call `close()` explicitly when done.
+**Connection lifecycle**: Each `assert()` call creates a fresh database connection and automatically closes it when done. No manual cleanup required.
 
 #### Configuration (src/config.ts)
 **Required**: `projectId`, `instanceId`, `databaseId`, `emulatorHost`
@@ -154,7 +153,7 @@ await database.runTransactionAsync(async (transaction) => {
 **TIMESTAMP handling**: Convert to ISO string with `new Date(...).toISOString()`, use `TIMESTAMP(@param)` in SQL.
 
 ### Playwright Integration (tests/playwright/assert.spec.ts)
-Create `SpannerAssertInstance` once, reuse across tests:
+Create `SpannerAssertInstance` once, use across tests:
 ```typescript
 import expectations from "./expectations.json" with { type: "json" };
 
@@ -172,15 +171,11 @@ test.beforeAll(async () => {
   await seed();  // Setup once
 });
 
-test.afterAll(async () => {
-  await spannerAssert.close();  // Cleanup
-});
-
 test("validates database", async () => {
   await spannerAssert.assert(expectations);
 });
 
-// Multiple assertions in same suite - reuses connection
+// Multiple assertions - each creates and closes its own connection
 test("validates another expectation", async () => {
   await spannerAssert.assert(anotherExpectations);
 });
@@ -316,8 +311,8 @@ const sql = `SELECT \`Email\` FROM \`Users\` WHERE \`Status\` = @status`;
 const params = { status: userInput };  // Safe
 ```
 
-### Connection Pooling
-**Session reuse enabled** - Single client instance can execute multiple assertions. Connection persists until explicit `close()` call. Leverages Spanner's internal session pooling for better performance.
+### Connection Management
+**Auto-cleanup design** - Each `assert()` call creates a fresh connection and automatically closes it when done. Simple and reliable for test scenarios with no manual resource management needed.
 
 ### Greedy Row Matching
 First expected row consumes first matching actual row. Use specific columns to avoid ambiguity when expectations overlap.

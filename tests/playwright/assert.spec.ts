@@ -23,10 +23,6 @@ test.describe("spanner-assert with Playwright", () => {
     await seed();
   });
 
-  test.afterAll(async () => {
-    await spannerAssert.close();
-  });
-
   test("seeds are present in the emulator", async () => {
     await spannerAssert.assert(expectations);
   });
