@@ -292,6 +292,54 @@ test("second assertion", async () => {
 });
 ```
 
+## Database Cleanup with `resetDatabase()`
+
+The `resetDatabase()` method deletes all data from specified tables, making it useful for cleaning up test data between tests. This ensures each test starts with a clean slate.
+
+### Basic Usage
+
+```ts
+await spannerAssert.resetDatabase(["Users", "Products", "Orders"]);
+```
+
+### Playwright Example
+
+Use `test.afterEach()` to automatically clean up after each test:
+
+```ts
+import { test } from "@playwright/test";
+import { createSpannerAssert } from "spanner-assert";
+
+const spannerAssert = createSpannerAssert({
+  connection: {
+    projectId: "your-project-id",
+    instanceId: "your-instance-id",
+    databaseId: "your-database",
+    emulatorHost: "127.0.0.1:9010",
+  },
+});
+
+test.describe("User Tests", () => {
+  test.afterEach(async () => {
+    // Clean up database after each test
+    await spannerAssert.resetDatabase([
+      "Users",
+      "Products",
+      "Orders",
+    ]);
+  });
+
+  test("creates a new user", async ({ page }) => {
+    // Test code...
+    await spannerAssert.assert(expectations);
+  });
+
+  test("updates user profile", async ({ page }) => {
+    // Test code...
+    await spannerAssert.assert(expectations);
+  });
+});
+```
 ## Row Matching Algorithm
 
 `spanner-assert` uses a **greedy matching algorithm** to compare expected rows against actual database rows. Understanding this behavior helps you write effective test expectations.
