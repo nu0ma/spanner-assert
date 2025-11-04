@@ -23,7 +23,50 @@ test.describe("spanner-assert with Playwright", () => {
     await seed();
   });
 
+  test.afterEach(async () => {
+    // Reset database after each test to ensure clean state
+    await spannerAssert.resetDatabase([
+      "Users",
+      "Products",
+      "Books",
+      "ArrayTests",
+    ]);
+  });
+
   test("seeds are present in the emulator", async () => {
     await spannerAssert.assert(expectations);
+  });
+
+  test("resetDatabase deletes all data from specified tables", async () => {
+    // 1. Seed test data
+    await seed();
+
+    // 2. Verify data exists
+    await spannerAssert.assert({
+      tables: {
+        Users: { count: 1 },
+        Products: { count: 1 },
+        Books: { count: 1 },
+        ArrayTests: { count: 3 },
+      },
+    });
+
+    // 3. Reset database
+    await spannerAssert.resetDatabase([
+      "Users",
+      "Products",
+      "Books",
+      "ArrayTests",
+    ]);
+
+    // 4. Verify all tables are empty
+    await spannerAssert.assert({
+      tables: {
+        Users: { count: 0 },
+        Products: { count: 0 },
+        Books: { count: 0 },
+        ArrayTests: { count: 0 },
+      },
+    });
   });
 });
