@@ -4,7 +4,7 @@ export type TableColumnExpectations = Record<string, ColumnValue>;
 
 export type TableExpectation = {
   count?: number;
-  rows: TableColumnExpectations[];
+  rows?: TableColumnExpectations[];
 };
 
 export type ExpectationsFile = {
