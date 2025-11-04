@@ -23,6 +23,16 @@ test.describe("spanner-assert with Playwright", () => {
     await seed();
   });
 
+  test.afterEach(async () => {
+    // Reset database after each test to ensure clean state
+    await spannerAssert.resetDatabase([
+      "Users",
+      "Products",
+      "Books",
+      "ArrayTests",
+    ]);
+  });
+
   test("seeds are present in the emulator", async () => {
     await spannerAssert.assert(expectations);
   });
