@@ -98,30 +98,102 @@ function rowMatches(
   for (const [column, expectedValue] of Object.entries(expected)) {
     const actualValue = actual[column];
 
-    if (!valuesMatch(expectedValue, actualValue)) {
+    // Treat objects and arrays as JSON values (enables subset matching and order-insensitive comparison)
+    // This applies to both JSON columns and ARRAY<T> columns for consistency
+    const treatAsJson =
+      isPlainObject(expectedValue) || Array.isArray(expectedValue);
+    if (!valuesMatch(expectedValue, actualValue, treatAsJson)) {
       return false;
     }
   }
   return true;
 }
 
-function valuesMatch(expected: unknown, actual: unknown): boolean {
-  // Handle null values
-  if (expected === null) {
-    return actual === null;
+/**
+ * Check if a value is a plain object (not null, not an array)
+ */
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+/**
+ * Compare two arrays with order-insensitive matching.
+ * Each element in expected must have a matching element in actual.
+ */
+function arraysMatchUnordered(
+  expected: unknown[],
+  actual: unknown[],
+  insideJson: boolean
+): boolean {
+  if (expected.length !== actual.length) return false;
+
+  // Create a copy to track which actual elements have been matched
+  const remaining = [...actual];
+
+  for (const expectedElement of expected) {
+    const index = remaining.findIndex((actualElement) =>
+      valuesMatch(expectedElement, actualElement, insideJson)
+    );
+
+    if (index === -1) return false;
+    remaining.splice(index, 1);
   }
 
-  // Handle arrays (order-sensitive comparison)
-  if (Array.isArray(expected)) {
-    if (!Array.isArray(actual)) return false;
-    if (expected.length !== actual.length) return false;
+  return true;
+}
 
-    for (let i = 0; i < expected.length; i++) {
-      if (!valuesMatch(expected[i], actual[i])) {
+/**
+ * Compare two values for equality.
+ * - Primitives: strict equality
+ * - Arrays (ARRAY<T> columns): order-sensitive comparison
+ * - Arrays (inside JSON): order-insensitive comparison
+ * - Objects (JSON): subset matching (only checks keys present in expected)
+ *
+ * @param expected - The expected value from the test expectation
+ * @param actual - The actual value from the database
+ * @param insideJson - Whether we're currently inside a JSON value context
+ */
+function valuesMatch(
+  expected: unknown,
+  actual: unknown,
+  insideJson = false
+): boolean {
+  // Handle null and undefined values (treat undefined as null)
+  if (expected === null || expected === undefined) {
+    return actual === null || actual === undefined;
+  }
+
+  // Handle JSON objects (subset matching)
+  if (isPlainObject(expected)) {
+    if (!isPlainObject(actual)) return false;
+
+    // Subset matching: only check keys present in expected
+    for (const [key, expectedValue] of Object.entries(expected)) {
+      if (!valuesMatch(expectedValue, actual[key], true)) {
         return false;
       }
     }
     return true;
+  }
+
+  // Handle arrays
+  if (Array.isArray(expected)) {
+    if (!Array.isArray(actual)) return false;
+
+    if (insideJson) {
+      // Order-insensitive comparison for arrays inside JSON
+      return arraysMatchUnordered(expected, actual, insideJson);
+    } else {
+      // Order-sensitive comparison for ARRAY<T> columns
+      if (expected.length !== actual.length) return false;
+
+      for (let i = 0; i < expected.length; i++) {
+        if (!valuesMatch(expected[i], actual[i], insideJson)) {
+          return false;
+        }
+      }
+      return true;
+    }
   }
 
   // Handle primitive values

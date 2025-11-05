@@ -56,6 +56,64 @@
           "Flags": []
         }
       ]
+    },
+    "JsonTests": {
+      "count": 5,
+      "rows": [
+        {
+          "TestID": "json-001",
+          "Metadata": {
+            "genre": "Fiction",
+            "rating": 4.5,
+            "inStock": true
+          },
+          "Config": {
+            "enabled": true,
+            "maxRetries": 3
+          },
+          "Items": null
+        },
+        {
+          "TestID": "json-002",
+          "Metadata": {
+            "author": {
+              "name": "John Doe"
+            }
+          },
+          "Config": {
+            "settings": {
+              "theme": "dark"
+            }
+          }
+        },
+        {
+          "TestID": "json-003",
+          "Items": [
+            { "id": 3, "name": "Item C" },
+            { "id": 1, "name": "Item A" },
+            { "id": 2, "name": "Item B" }
+          ]
+        },
+        {
+          "TestID": "json-004",
+          "Metadata": {
+            "version": "1.0",
+            "features": ["feature2", "feature1", "feature3"]
+          },
+          "Config": {
+            "options": ["opt2", "opt1"]
+          },
+          "Items": [5, 3, 1, 4, 2]
+        },
+        {
+          "TestID": "json-005",
+          "Metadata": {},
+          "Config": {
+            "empty": []
+          },
+          "Items": []
+        }
+      ]
     }
   }
 }

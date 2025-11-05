@@ -224,7 +224,7 @@ This pattern allows you to:
 
 ### Supported value types
 
-`spanner-assert` compares column values using `string`, `number`, `boolean`, `null`, and **arrays** of these primitive types.
+`spanner-assert` compares column values using `string`, `number`, `boolean`, `null`, **arrays**, and **JSON** types.
 
 **Primitive types:**
 
@@ -234,7 +234,7 @@ This pattern allows you to:
 **Array types (ARRAY columns):**
 
 - `ARRAY<STRING>`, `ARRAY<INT64>`, `ARRAY<BOOL>` are supported
-- Arrays are compared with **order-sensitive matching** (exact element order required)
+- Arrays are compared with **order-insensitive matching** (element order does not matter)
 - Empty arrays (`[]`) are supported
 
 **Array example:**
@@ -259,6 +259,106 @@ This pattern allows you to:
       ]
     }
   }
+}
+```
+
+**JSON types:**
+
+- Spanner `JSON` columns are fully supported
+- **Subset matching**: Only specified keys in expected JSON objects are compared (additional keys in actual data are ignored)
+- **Order-insensitive arrays**: Arrays within JSON values can be in any order
+- **Nested structures**: Unlimited nesting depth is supported
+
+**JSON example:**
+
+```json
+{
+  "tables": {
+    "Products": {
+      "rows": [
+        {
+          "ProductID": "product-001",
+          "Metadata": {
+            "category": "electronics",
+            "tags": ["laptop", "gaming"],
+            "specs": {
+              "cpu": "Intel i9",
+              "ram": 32
+            }
+          }
+        },
+        {
+          "ProductID": "product-002",
+          "Reviews": [
+            { "rating": 5, "comment": "Great!" },
+            { "rating": 4, "comment": "Good" }
+          ]
+        }
+      ]
+    }
+  }
+}
+```
+
+**JSON subset matching example:**
+
+```json
+// Expected (subset matching - only check specific keys)
+{
+  "tables": {
+    "Products": {
+      "rows": [
+        {
+          "ProductID": "product-001",
+          "Metadata": {
+            "category": "electronics"
+          }
+        }
+      ]
+    }
+  }
+}
+
+// Actual database (matches even with extra keys)
+{
+  "ProductID": "product-001",
+  "Metadata": {
+    "category": "electronics",     ✅ matches
+    "tags": ["laptop", "gaming"],   ⬜ ignored
+    "specs": { "cpu": "Intel i9" }  ⬜ ignored
+  }
+}
+```
+
+**JSON order-insensitive array example:**
+
+```json
+// Expected (arrays in any order)
+{
+  "tables": {
+    "Articles": {
+      "rows": [
+        {
+          "ArticleID": "article-001",
+          "Tags": [
+            { "id": 3, "name": "TypeScript" },
+            { "id": 1, "name": "JavaScript" },
+            { "id": 2, "name": "Node.js" }
+          ]
+        }
+      ]
+    }
+  }
+}
+
+// Actual database (different order, still matches)
+{
+  "ArticleID": "article-001",
+  "Tags": [
+    { "id": 1, "name": "JavaScript" },  ✅ matches
+    { "id": 2, "name": "Node.js" },     ✅ matches
+    { "id": 3, "name": "TypeScript" }   ✅ matches
+  ]
 }
 ```
 

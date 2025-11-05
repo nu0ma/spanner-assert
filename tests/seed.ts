@@ -33,6 +33,9 @@ export async function seedSamples(
         sql: "DELETE FROM ArrayTests WHERE TRUE",
       },
       {
+        sql: "DELETE FROM JsonTests WHERE TRUE",
+      },
+      {
         sql: `INSERT INTO Users (UserID, Name, Email, Status, CreatedAt)
                VALUES (@userId, @name, @email, @status, TIMESTAMP(@createdAt))`,
         params: {
@@ -132,6 +135,105 @@ export async function seedSamples(
           tags: { type: "array", child: { type: "string" } },
           scores: { type: "array", child: { type: "int64" } },
           flags: { type: "array", child: { type: "bool" } },
+        },
+      },
+      // JSON test data: Simple object
+      {
+        sql: `INSERT INTO JsonTests (TestID, Metadata, Config, Items)
+               VALUES (@testId, @metadata, @config, @items)`,
+        params: {
+          testId: "json-001",
+          metadata: { genre: "Fiction", rating: 4.5, inStock: true },
+          config: { enabled: true, maxRetries: 3 },
+          items: null,
+        },
+        types: {
+          testId: { type: "string" },
+          metadata: { type: "json" },
+          config: { type: "json" },
+          items: { type: "json" },
+        },
+      },
+      // JSON test data: Nested structure
+      {
+        sql: `INSERT INTO JsonTests (TestID, Metadata, Config, Items)
+               VALUES (@testId, @metadata, @config, @items)`,
+        params: {
+          testId: "json-002",
+          metadata: {
+            author: { name: "John Doe", email: "john@example.com" },
+            tags: ["tech", "tutorial"],
+          },
+          config: {
+            settings: { theme: "dark", notifications: { email: true, push: false } },
+          },
+          items: null,
+        },
+        types: {
+          testId: { type: "string" },
+          metadata: { type: "json" },
+          config: { type: "json" },
+          items: { type: "json" },
+        },
+      },
+      // JSON test data: Arrays (for order-insensitive testing)
+      // Note: Top-level JSON arrays must be passed as strings to avoid ARRAY<JSON> interpretation
+      {
+        sql: `INSERT INTO JsonTests (TestID, Metadata, Config, Items)
+               VALUES (@testId, @metadata, @config, @items)`,
+        params: {
+          testId: "json-003",
+          metadata: null,
+          config: null,
+          items: JSON.stringify([
+            { id: 1, name: "Item A" },
+            { id: 2, name: "Item B" },
+            { id: 3, name: "Item C" },
+          ]),
+        },
+        types: {
+          testId: { type: "string" },
+          metadata: { type: "json" },
+          config: { type: "json" },
+          items: { type: "json" },
+        },
+      },
+      // JSON test data: Complex mixed structure
+      {
+        sql: `INSERT INTO JsonTests (TestID, Metadata, Config, Items)
+               VALUES (@testId, @metadata, @config, @items)`,
+        params: {
+          testId: "json-004",
+          metadata: {
+            version: "1.0",
+            features: ["feature1", "feature2", "feature3"],
+            stats: { views: 1000, likes: 50 },
+          },
+          config: { options: ["opt1", "opt2"] },
+          items: JSON.stringify([1, 2, 3, 4, 5]),
+        },
+        types: {
+          testId: { type: "string" },
+          metadata: { type: "json" },
+          config: { type: "json" },
+          items: { type: "json" },
+        },
+      },
+      // JSON test data: Edge cases (empty objects/arrays)
+      {
+        sql: `INSERT INTO JsonTests (TestID, Metadata, Config, Items)
+               VALUES (@testId, @metadata, @config, @items)`,
+        params: {
+          testId: "json-005",
+          metadata: {},
+          config: { empty: [] },
+          items: JSON.stringify([]),
+        },
+        types: {
+          testId: { type: "string" },
+          metadata: { type: "json" },
+          config: { type: "json" },
+          items: { type: "json" },
         },
       },
     ]);
