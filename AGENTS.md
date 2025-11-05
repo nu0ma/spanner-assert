@@ -87,17 +87,46 @@ Throws `SpannerAssertionError` with structured details (table, expected, actual)
 - **Subset matching**: Only columns in expected row are compared
 - Returns list of expected rows not found
 
-**Comparison logic** (`rowMatches()`):
+**Comparison logic** (`valuesMatch()`):
+Supports three comparison modes:
+1. **Primitive values**: Strict equality (`===`)
+2. **Arrays (ARRAY<T> and JSON)**: Order-insensitive matching (greedy algorithm)
+3. **Objects (JSON)**: Subset matching (only checks specified keys) with recursive deep comparison
+
 ```typescript
-for (const [column, expectedValue] of Object.entries(expected)) {
-  const actualValue = actual[column];
-  if (expectedValue === null) {
-    if (actualValue !== null) return false;  // Strict null check
-  } else {
-    if (actualValue !== expectedValue) return false;  // Direct equality
+function valuesMatch(expected: unknown, actual: unknown, insideJson = false): boolean {
+  // Null/undefined treated as equivalent
+  if (expected === null || expected === undefined) {
+    return actual === null || actual === undefined;
   }
+
+  // JSON objects: subset matching
+  if (isPlainObject(expected)) {
+    if (!isPlainObject(actual)) return false;
+    for (const [key, expectedValue] of Object.entries(expected)) {
+      if (!valuesMatch(expectedValue, actual[key], true)) return false;
+    }
+    return true;
+  }
+
+  // Arrays: order-insensitive when inside JSON or at top level
+  if (Array.isArray(expected)) {
+    if (insideJson) {
+      return arraysMatchUnordered(expected, actual, insideJson);
+    }
+    // Order-sensitive for non-JSON context (legacy support)
+  }
+
+  // Primitives
+  return expected === actual;
 }
 ```
+
+**JSON comparison features**:
+- **Subset matching**: Only keys present in expected object are compared
+- **Order-insensitive arrays**: Arrays within JSON can be in any order
+- **Unlimited nesting**: Recursive comparison supports any depth
+- **Type safety**: undefined treated as null for TypeScript compatibility
 
 **Numeric normalization**: Converts Spanner INT64 (bigint) → number for JavaScript compatibility.
 
@@ -122,9 +151,27 @@ SpannerAssertionError: 1 expected row(s) not found in table "Users".
 ```
 
 ### Type System (src/types.ts)
-- `ColumnValue = string | number | boolean | null` - Supported primitive types
-- `TableExpectation = { count?: number; rows: TableColumnExpectations[] }`
-- Only primitives supported - TIMESTAMP/DATE must be compared as strings in JSON
+```typescript
+export type ColumnValue =
+  | string
+  | number
+  | boolean
+  | null
+  | undefined  // TypeScript compatibility for union types
+  | ColumnValue[]  // Arrays (ARRAY<T> columns and JSON arrays)
+  | { [key: string]: ColumnValue };  // JSON objects
+```
+
+**Supported types**:
+- **Primitives**: string, number, boolean, null
+- **Arrays**: ARRAY<STRING>, ARRAY<INT64>, ARRAY<BOOL> (Spanner array columns)
+- **JSON objects**: Nested objects with unlimited depth (Spanner JSON columns)
+- **JSON arrays**: Arrays containing any JSON values (Spanner JSON columns)
+
+**Special handling**:
+- TIMESTAMP/DATE must be compared as strings in expectations (e.g., "2024-01-01T00:00:00Z")
+- undefined treated as null for TypeScript union type compatibility
+- Arrays are order-insensitive (both ARRAY<T> and JSON)
 
 ## Testing Infrastructure
 
@@ -151,6 +198,41 @@ await database.runTransactionAsync(async (transaction) => {
 ```
 
 **TIMESTAMP handling**: Convert to ISO string with `new Date(...).toISOString()`, use `TIMESTAMP(@param)` in SQL.
+
+**JSON handling**:
+- **JSON objects**: Pass as JavaScript objects directly
+  ```typescript
+  params: {
+    metadata: { genre: "Fiction", rating: 4.5 }
+  },
+  types: {
+    metadata: { type: "json" }
+  }
+  ```
+- **JSON arrays (top-level)**: Must be stringified to avoid ARRAY<JSON> interpretation
+  ```typescript
+  params: {
+    items: JSON.stringify([
+      { id: 1, name: "Item A" },
+      { id: 2, name: "Item B" }
+    ])
+  },
+  types: {
+    items: { type: "json" }
+  }
+  ```
+- **Nested arrays within objects**: Pass normally (no stringification needed)
+  ```typescript
+  params: {
+    metadata: {
+      tags: ["tag1", "tag2"],  // OK - nested in object
+      items: [{ id: 1 }, { id: 2 }]
+    }
+  },
+  types: {
+    metadata: { type: "json" }
+  }
+  ```
 
 ### Playwright Integration (tests/playwright/assert.spec.ts)
 Create `SpannerAssertInstance` once, use across tests:
