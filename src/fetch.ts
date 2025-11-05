@@ -96,13 +96,7 @@ function rowMatches(
   actual: Record<string, unknown>
 ): boolean {
   for (const [column, expectedValue] of Object.entries(expected)) {
-    const actualValue = actual[column];
-
-    // Treat objects and arrays as JSON values (enables subset matching and order-insensitive comparison)
-    // This applies to both JSON columns and ARRAY<T> columns for consistency
-    const treatAsJson =
-      isPlainObject(expectedValue) || Array.isArray(expectedValue);
-    if (!valuesMatch(expectedValue, actualValue, treatAsJson)) {
+    if (!valuesMatch(expectedValue, actual[column])) {
       return false;
     }
   }
@@ -117,87 +111,61 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
 }
 
 /**
- * Compare two arrays with order-insensitive matching.
- * Each element in expected must have a matching element in actual.
- */
-function arraysMatchUnordered(
-  expected: unknown[],
-  actual: unknown[],
-  insideJson: boolean
-): boolean {
-  if (expected.length !== actual.length) return false;
-
-  // Create a copy to track which actual elements have been matched
-  const remaining = [...actual];
-
-  for (const expectedElement of expected) {
-    const index = remaining.findIndex((actualElement) =>
-      valuesMatch(expectedElement, actualElement, insideJson)
-    );
-
-    if (index === -1) return false;
-    remaining.splice(index, 1);
-  }
-
-  return true;
-}
-
-/**
- * Compare two values for equality.
+ * Compare two values with support for:
  * - Primitives: strict equality
- * - Arrays (ARRAY<T> columns): order-sensitive comparison
- * - Arrays (inside JSON): order-insensitive comparison
- * - Objects (JSON): subset matching (only checks keys present in expected)
- *
- * @param expected - The expected value from the test expectation
- * @param actual - The actual value from the database
- * @param insideJson - Whether we're currently inside a JSON value context
+ * - Objects: subset matching (only checks keys in expected)
+ * - Arrays: order-insensitive matching
+ * - Nested structures: recursive comparison
  */
-function valuesMatch(
-  expected: unknown,
-  actual: unknown,
-  insideJson = false
-): boolean {
-  // Handle null and undefined values (treat undefined as null)
+function valuesMatch(expected: unknown, actual: unknown): boolean {
+  // Null and undefined are treated as equivalent
   if (expected === null || expected === undefined) {
     return actual === null || actual === undefined;
   }
 
-  // Handle JSON objects (subset matching)
+  // Objects: subset matching
   if (isPlainObject(expected)) {
-    if (!isPlainObject(actual)) return false;
+    if (!isPlainObject(actual)) {
+      return false;
+    }
 
-    // Subset matching: only check keys present in expected
     for (const [key, expectedValue] of Object.entries(expected)) {
-      if (!valuesMatch(expectedValue, actual[key], true)) {
+      if (!valuesMatch(expectedValue, actual[key])) {
         return false;
       }
     }
     return true;
   }
 
-  // Handle arrays
+  // Arrays: order-insensitive matching
   if (Array.isArray(expected)) {
-    if (!Array.isArray(actual)) return false;
-
-    if (insideJson) {
-      // Order-insensitive comparison for arrays inside JSON
-      return arraysMatchUnordered(expected, actual, insideJson);
-    } else {
-      // Order-sensitive comparison for ARRAY<T> columns
-      if (expected.length !== actual.length) return false;
-
-      for (let i = 0; i < expected.length; i++) {
-        if (!valuesMatch(expected[i], actual[i], insideJson)) {
-          return false;
-        }
-      }
-      return true;
-    }
+    return arraysMatch(expected, actual);
   }
 
-  // Handle primitive values
+  // Primitives: strict equality
   return expected === actual;
+}
+
+/**
+ * Compare two arrays with order-insensitive matching.
+ * Uses greedy algorithm: first match is consumed.
+ */
+function arraysMatch(expected: unknown[], actual: unknown): boolean {
+  if (!Array.isArray(actual) || expected.length !== actual.length) {
+    return false;
+  }
+
+  const remaining = [...actual];
+
+  for (const expectedItem of expected) {
+    const index = remaining.findIndex((item) => valuesMatch(expectedItem, item));
+    if (index === -1) {
+      return false;
+    }
+    remaining.splice(index, 1);
+  }
+
+  return true;
 }
 
 function normalizeNumericValue(value: unknown): number {
