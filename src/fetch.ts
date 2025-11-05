@@ -96,36 +96,76 @@ function rowMatches(
   actual: Record<string, unknown>
 ): boolean {
   for (const [column, expectedValue] of Object.entries(expected)) {
-    const actualValue = actual[column];
-
-    if (!valuesMatch(expectedValue, actualValue)) {
+    if (!valuesMatch(expectedValue, actual[column])) {
       return false;
     }
   }
   return true;
 }
 
+/**
+ * Check if a value is a plain object (not null, not an array)
+ */
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+/**
+ * Compare two values with support for:
+ * - Primitives: strict equality
+ * - Objects: subset matching (only checks keys in expected)
+ * - Arrays: order-insensitive matching
+ * - Nested structures: recursive comparison
+ */
 function valuesMatch(expected: unknown, actual: unknown): boolean {
-  // Handle null values
-  if (expected === null) {
-    return actual === null;
+  // Null and undefined are treated as equivalent
+  if (expected === null || expected === undefined) {
+    return actual === null || actual === undefined;
   }
 
-  // Handle arrays (order-sensitive comparison)
-  if (Array.isArray(expected)) {
-    if (!Array.isArray(actual)) return false;
-    if (expected.length !== actual.length) return false;
+  // Objects: subset matching
+  if (isPlainObject(expected)) {
+    if (!isPlainObject(actual)) {
+      return false;
+    }
 
-    for (let i = 0; i < expected.length; i++) {
-      if (!valuesMatch(expected[i], actual[i])) {
+    for (const [key, expectedValue] of Object.entries(expected)) {
+      if (!valuesMatch(expectedValue, actual[key])) {
         return false;
       }
     }
     return true;
   }
 
-  // Handle primitive values
+  // Arrays: order-insensitive matching
+  if (Array.isArray(expected)) {
+    return arraysMatch(expected, actual);
+  }
+
+  // Primitives: strict equality
   return expected === actual;
+}
+
+/**
+ * Compare two arrays with order-insensitive matching.
+ * Uses greedy algorithm: first match is consumed.
+ */
+function arraysMatch(expected: unknown[], actual: unknown): boolean {
+  if (!Array.isArray(actual) || expected.length !== actual.length) {
+    return false;
+  }
+
+  const remaining = [...actual];
+
+  for (const expectedItem of expected) {
+    const index = remaining.findIndex((item) => valuesMatch(expectedItem, item));
+    if (index === -1) {
+      return false;
+    }
+    remaining.splice(index, 1);
+  }
+
+  return true;
 }
 
 function normalizeNumericValue(value: unknown): number {

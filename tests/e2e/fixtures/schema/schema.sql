@@ -28,3 +28,10 @@ CREATE TABLE ArrayTests (
   Scores ARRAY<INT64>,
   Flags ARRAY<BOOL>
 ) PRIMARY KEY (TestID);
+
+CREATE TABLE JsonTests (
+  TestID STRING(36) NOT NULL,
+  Metadata JSON,
+  Config JSON,
+  Items JSON
+) PRIMARY KEY (TestID);
