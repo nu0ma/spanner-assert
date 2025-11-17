@@ -25,10 +25,10 @@ importers:
         specifier: ^24.10.0
         version: 24.10.0
       '@typescript-eslint/eslint-plugin':
-        specifier: ^8.46.2
+        specifier: ^8.46.3
         version: 8.46.3(@typescript-eslint/parser@8.46.3(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3))(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3)
       '@typescript-eslint/parser':
-        specifier: ^8.46.2
+        specifier: ^8.46.3
         version: 8.46.3(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3)
       consola:
         specifier: ^3.4.2
