@@ -47,7 +47,7 @@
     ]
   },
   "dependencies": {
-    "@google-cloud/spanner": "^8.2.2"
+    "@google-cloud/spanner": "^8.3.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
