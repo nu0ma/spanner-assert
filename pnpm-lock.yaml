@@ -49,7 +49,7 @@ importers:
         specifier: ^12.1.1
         version: 12.1.1(eslint@9.39.1(jiti@2.6.1))
       eslint-plugin-testing-library:
-        specifier: ^7.13.4
+        specifier: ^7.13.5
         version: 7.13.5(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3)
       eslint-plugin-unused-imports:
         specifier: ^4.3.0
