@@ -67,8 +67,8 @@ importers:
         specifier: ^3.7.4
         version: 3.7.4
       publint:
-        specifier: ^0.3.15
-        version: 0.3.15
+        specifier: ^0.3.16
+        version: 0.3.16
       secretlint:
         specifier: ^11.2.5
         version: 11.2.5
@@ -77,7 +77,7 @@ importers:
         version: 3.6.0
       tsdown:
         specifier: ^0.15.12
-        version: 0.15.12(publint@0.3.15)(typescript@5.9.3)
+        version: 0.15.12(publint@0.3.16)(typescript@5.9.3)
       tsx:
         specifier: ^4.21.0
         version: 4.21.0
@@ -2102,8 +2102,8 @@ packages:
   package-json-from-dist@1.0.1:
     resolution: {integrity: sha512-UEZIS3/by4OC8vL3P2dTXRETpebLI2NiI5vIrjaD/5UtrkFX/tNbwjTSRAGC/+7CAo2pIcBaRgWmcBBHcsaCIw==}
 
-  package-manager-detector@1.5.0:
-    resolution: {integrity: sha512-uBj69dVlYe/+wxj8JOpr97XfsxH/eumMt6HqjNTmJDf/6NO9s+0uxeOneIz3AsPt2m6y9PqzDzd3ATcU17MNfw==}
+  package-manager-detector@1.6.0:
+    resolution: {integrity: sha512-61A5ThoTiDG/C8s8UMZwSorAGwMJ0ERVGj2OjoW5pAalsNOg15+iQiPzrLJ4jhZ1HJzmC2PIHT2oEiH3R5fzNA==}
 
   parent-module@1.0.1:
     resolution: {integrity: sha512-GQ2EWRpQV8/o+Aw8YqtfZZPfNRWZYkbidE9k5rpl/hC3vtHHBfGm2Ifi6qWV+coDGkrUKZAxE3Lot5kcsRlh+g==}
@@ -2196,8 +2196,8 @@ packages:
     resolution: {integrity: sha512-CvexbZtbov6jW2eXAvLukXjXUW1TzFaivC46BpWc/3BpcCysb5Vffu+B3XHMm8lVEuy2Mm4XGex8hBSg1yapPg==}
     engines: {node: '>=12.0.0'}
 
-  publint@0.3.15:
-    resolution: {integrity: sha512-xPbRAPW+vqdiaKy5sVVY0uFAu3LaviaPO3pZ9FaRx59l9+U/RKR1OEbLhkug87cwiVKxPXyB4txsv5cad67u+A==}
+  publint@0.3.16:
+    resolution: {integrity: sha512-MFqyfRLAExPVZdTQFwkAQELzA8idyXzROVOytg6nEJ/GEypXBUmMGrVaID8cTuzRS1U5L8yTOdOJtMXgFUJAeA==}
     engines: {node: '>=18'}
     hasBin: true
 
@@ -4925,7 +4925,7 @@ snapshots:
 
   package-json-from-dist@1.0.1: {}
 
-  package-manager-detector@1.5.0: {}
+  package-manager-detector@1.6.0: {}
 
   parent-module@1.0.1:
     dependencies:
@@ -5005,10 +5005,10 @@ snapshots:
       '@types/node': 24.10.4
       long: 5.3.2
 
-  publint@0.3.15:
+  publint@0.3.16:
     dependencies:
       '@publint/pack': 0.1.2
-      package-manager-detector: 1.5.0
+      package-manager-detector: 1.6.0
       picocolors: 1.1.1
       sade: 1.8.1
 
@@ -5476,7 +5476,7 @@ snapshots:
       minimist: 1.2.8
       strip-bom: 3.0.0
 
-  tsdown@0.15.12(publint@0.3.15)(typescript@5.9.3):
+  tsdown@0.15.12(publint@0.3.16)(typescript@5.9.3):
     dependencies:
       ansis: 4.2.0
       cac: 6.7.14
@@ -5493,7 +5493,7 @@ snapshots:
       tree-kill: 1.2.2
       unconfig: 7.4.1
     optionalDependencies:
-      publint: 0.3.15
+      publint: 0.3.16
       typescript: 5.9.3
     transitivePeerDependencies:
       - '@ts-macro/tsc'
