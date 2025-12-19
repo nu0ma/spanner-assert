@@ -62,7 +62,7 @@
     "eslint-import-resolver-typescript": "^4.4.4",
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-simple-import-sort": "^12.1.1",
-    "eslint-plugin-testing-library": "^7.13.5",
+    "eslint-plugin-testing-library": "^7.13.6",
     "eslint-plugin-unused-imports": "^4.3.0",
     "husky": "^9.1.7",
     "jest-diff": "^30.2.0",
