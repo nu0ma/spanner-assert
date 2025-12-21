@@ -73,7 +73,7 @@ importers:
         specifier: ^11.2.5
         version: 11.2.5
       sort-package-json:
-        specifier: ^3.5.1
+        specifier: ^3.6.0
         version: 3.6.0
       tsdown:
         specifier: ^0.15.12
