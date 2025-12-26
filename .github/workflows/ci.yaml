@@ -39,11 +39,10 @@ jobs:
       - name: Install Task
         uses: go-task/setup-task@0ab1b2a65bc55236a3bc64cde78f80e20e8885c2 # v1.0.0
 
-      - name: Install Go tools
+      - name: Install wrench
         run: |
-          go install github.com/cloudspannerecosystem/wrench@latest
-          go install github.com/nu0ma/spalidate@latest
-          echo "$HOME/go/bin" >> "$GITHUB_PATH"
+          curl -sL https://github.com/cloudspannerecosystem/wrench/releases/download/v1.13.1/wrench-1.13.1-linux-amd64.tar.gz | tar -xz
+          sudo mv wrench /usr/local/bin/
 
       - name: Lint
         run: pnpm run lint
