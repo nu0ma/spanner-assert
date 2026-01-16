@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@google-cloud/spanner':
-        specifier: ^8.3.1
-        version: 8.3.1
+        specifier: ^8.4.0
+        version: 8.4.0
     devDependencies:
       '@eslint/js':
         specifier: ^9.39.2
@@ -405,8 +405,8 @@ packages:
     resolution: {integrity: sha512-N8qS6dlORGHwk7WjGXKOSsLjIjNINCPicsOX6gyyLiYk7mq3MtII96NZ9N2ahwA2vnkLmZODOIH9rlNniYWvCQ==}
     engines: {node: '>=18'}
 
-  '@google-cloud/spanner@8.3.1':
-    resolution: {integrity: sha512-/njY6ik+JwRFoXBdQfz2hMROnnCFKsEXBKLykDz/Mrd6GROcCovJtEFCY7jlU8ZFiRsYSYshB45SyTIFE8LLTw==}
+  '@google-cloud/spanner@8.4.0':
+    resolution: {integrity: sha512-F7/JfNebtHR2By5knbCB7nL18DexOsnUKHtE+a24M+ZlkGaJkIVk5L4AczO/SsJuWoQP5WJSc7krpfaoPre/lg==}
     engines: {node: '>=18'}
 
   '@grpc/grpc-js@1.14.1':
@@ -1687,8 +1687,8 @@ packages:
     resolution: {integrity: sha512-7ABviyMOlX5hIVD60YOfHw4/CxOfBhyduaYB+wbFWCWoni4N7SLcV46hrVRktuBbZjFC9ONyqamZITN7q3n32w==}
     engines: {node: '>=18'}
 
-  google-gax@5.0.4:
-    resolution: {integrity: sha512-HmQ6zIYBs2EikTk+kjeHmtHprNTEpsnVaKONw9cwZZwUNCkUb+D5RYrJpCxyjdvIDvJp3wLbVReolJLRZRms1g==}
+  google-gax@5.0.6:
+    resolution: {integrity: sha512-1kGbqVQBZPAAu4+/R1XxPQKP0ydbNYoLAr4l0ZO2bMV0kLyLW4I1gAk++qBLWt7DPORTzmWRMsCZe86gDjShJA==}
     engines: {node: '>=18'}
 
   google-logging-utils@0.0.2:
@@ -3141,7 +3141,7 @@ snapshots:
 
   '@google-cloud/monitoring@5.3.1':
     dependencies:
-      google-gax: 5.0.4
+      google-gax: 5.0.6
     transitivePeerDependencies:
       - supports-color
 
@@ -3164,7 +3164,7 @@ snapshots:
 
   '@google-cloud/promisify@5.0.0': {}
 
-  '@google-cloud/spanner@8.3.1':
+  '@google-cloud/spanner@8.4.0':
     dependencies:
       '@babel/core': 7.27.7
       '@babel/helpers': 7.27.6
@@ -3191,7 +3191,7 @@ snapshots:
       events-intercept: 2.0.0
       extend: 3.0.2
       google-auth-library: 10.5.0
-      google-gax: 5.0.4
+      google-gax: 5.0.6
       grpc-gcp: 1.0.1
       lodash.snakecase: 4.1.1
       merge-stream: 2.0.0
@@ -4570,7 +4570,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  google-gax@5.0.4:
+  google-gax@5.0.6:
     dependencies:
       '@grpc/grpc-js': 1.14.1
       '@grpc/proto-loader': 0.8.0
@@ -4582,6 +4582,7 @@ snapshots:
       proto3-json-serializer: 3.0.4
       protobufjs: 7.5.4
       retry-request: 8.0.2
+      rimraf: 5.0.10
     transitivePeerDependencies:
       - supports-color
 
