@@ -22,7 +22,7 @@ importers:
         specifier: ^11.3.0
         version: 11.3.0
       '@types/node':
-        specifier: ^24.10.8
+        specifier: ^24.10.9
         version: 24.10.9
       '@typescript-eslint/eslint-plugin':
         specifier: ^8.53.0
