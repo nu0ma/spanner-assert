@@ -408,6 +408,7 @@ packages:
   '@google-cloud/spanner@8.4.0':
     resolution: {integrity: sha512-F7/JfNebtHR2By5knbCB7nL18DexOsnUKHtE+a24M+ZlkGaJkIVk5L4AczO/SsJuWoQP5WJSc7krpfaoPre/lg==}
     engines: {node: '>=18'}
+    deprecated: Version 8.4.0 introduced a regression in UUID type string inference. Please upgrade to v8.5.0 or later for backward compatibility.
 
   '@grpc/grpc-js@1.14.1':
     resolution: {integrity: sha512-sPxgEWtPUR3EnRJCEtbGZG2iX8LQDUls2wUS3o27jg07KqJFMq6YDeWvMo1wfpmy3rqRdS0rivpLwhqQtEyCuQ==}
