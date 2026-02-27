@@ -50,7 +50,7 @@
     "@google-cloud/spanner": "^8.6.0"
   },
   "devDependencies": {
-    "@eslint/js": "^9.39.2",
+    "@eslint/js": "^9.39.3",
     "@playwright/test": "^1.58.2",
     "@secretlint/secretlint-rule-preset-recommend": "^11.3.1",
     "@types/node": "^24.10.13",
