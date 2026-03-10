@@ -68,7 +68,7 @@
     "jest-diff": "^30.2.0",
     "lint-staged": "^16.3.1",
     "prettier": "^3.8.0",
-    "publint": "^0.3.17",
+    "publint": "^0.3.18",
     "secretlint": "^11.3.1",
     "sort-package-json": "^3.6.1",
     "tsdown": "^0.19.0",
