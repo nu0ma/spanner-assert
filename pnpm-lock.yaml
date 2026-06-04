@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@google-cloud/spanner':
-        specifier: ^8.6.0
-        version: 8.6.0
+        specifier: ^8.7.1
+        version: 8.7.1
     devDependencies:
       '@eslint/js':
         specifier: ^9.39.4
@@ -430,8 +430,8 @@ packages:
     resolution: {integrity: sha512-N8qS6dlORGHwk7WjGXKOSsLjIjNINCPicsOX6gyyLiYk7mq3MtII96NZ9N2ahwA2vnkLmZODOIH9rlNniYWvCQ==}
     engines: {node: '>=18'}
 
-  '@google-cloud/spanner@8.6.0':
-    resolution: {integrity: sha512-ed7nQgNXj1Tjrvwwc1MmeMFBfmU5mdxVtJw+gQI+ic0rvHf0BHZ9dlz+cvxgZEOC/Uy7/Gv/00zpoIrQ2i6DCg==}
+  '@google-cloud/spanner@8.7.1':
+    resolution: {integrity: sha512-X3eXi6l6qj+Tn8eRdeSvRzLvpLrkmINTD4bzZwuwv3S/y4RDck/UlG8CzE41i+cXxrsDYoNxU/KkgVz7Xz6/KQ==}
     engines: {node: '>=18'}
 
   '@grpc/grpc-js@1.14.1':
@@ -3256,7 +3256,7 @@ snapshots:
 
   '@google-cloud/promisify@5.0.0': {}
 
-  '@google-cloud/spanner@8.6.0':
+  '@google-cloud/spanner@8.7.1':
     dependencies:
       '@babel/core': 7.27.7
       '@babel/helpers': 7.27.6
