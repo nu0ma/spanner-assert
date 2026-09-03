@@ -73,8 +73,8 @@ importers:
         specifier: ^11.7.1
         version: 11.7.1
       sort-package-json:
-        specifier: ^3.6.1
-        version: 3.6.1
+        specifier: ^3.7.1
+        version: 3.7.1
       tsdown:
         specifier: ^0.22.14
         version: 0.22.14(publint@0.3.24)(tsx@4.22.4)(typescript@5.9.3)(unrun@0.2.32(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0))
@@ -2657,8 +2657,8 @@ packages:
   sort-object-keys@2.0.1:
     resolution: {integrity: sha512-R89fO+z3x7hiKPXX5P0qim+ge6Y60AjtlW+QQpRozrrNcR1lw9Pkpm5MLB56HoNvdcLHL4wbpq16OcvGpEDJIg==}
 
-  sort-package-json@3.6.1:
-    resolution: {integrity: sha512-Chgejw1+10p2D0U2tB7au1lHtz6TkFnxmvZktyBCRyV0GgmF6nl1IxXxAsPtJVsUyg/fo+BfCMAVVFUVRkAHrQ==}
+  sort-package-json@3.7.1:
+    resolution: {integrity: sha512-ssk1HG7whF8N/T1IsNAQrtHG5Cbdi0rAgRJZXYBr9hF5xaHnBNzUx/W6LcthEW7FhOwvZssbESZuO+GxssqAyA==}
     engines: {node: '>=20'}
     hasBin: true
 
@@ -5703,7 +5703,7 @@ snapshots:
 
   sort-object-keys@2.0.1: {}
 
-  sort-package-json@3.6.1:
+  sort-package-json@3.7.1:
     dependencies:
       detect-indent: 7.0.2
       detect-newline: 4.0.1
