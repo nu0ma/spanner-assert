@@ -70,7 +70,7 @@
     "prettier": "^3.8.0",
     "publint": "^0.3.24",
     "secretlint": "^11.7.1",
-    "sort-package-json": "^3.6.1",
+    "sort-package-json": "^3.7.1",
     "tsdown": "^0.22.14",
     "tsx": "^4.22.3",
     "typescript": "^5.9.3"
