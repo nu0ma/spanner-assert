@@ -65,7 +65,7 @@
     "eslint-plugin-testing-library": "^7.16.2",
     "eslint-plugin-unused-imports": "^4.4.1",
     "husky": "^9.1.7",
-    "jest-diff": "^30.4.1",
+    "jest-diff": "^30.5.0",
     "lint-staged": "^16.4.0",
     "prettier": "^3.8.0",
     "publint": "^0.3.24",
